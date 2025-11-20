@@ -1,0 +1,130 @@
+/* Arquivo: src/styles/Loja.css */
+
+/* Configuração global e de layout */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #f4f7fa;
+}
+
+/* 1. Estilos da Sidebar */
+.sidebar {
+  width: 240px;
+  background-color: #0c2b4e;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+}
+/* ... resto do seu código CSS ... */
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.sidebar ul li {
+  padding: 18px 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 16px;
+  font-weight: 500;
+  border-right: 4px solid transparent;
+}
+.sidebar ul li:hover {
+  background-color: #1a4a7d;
+}
+.sidebar ul li.active {
+  background-color: #ffffff;
+  color: #0c2b4e;
+  font-weight: bold;
+  border-radius: 6px 0 0 6px;
+  margin-right: -1px;
+  position: relative;
+}
+
+/* 2. Estilos do Conteúdo Principal */
+.main-content {
+  flex: 1;
+  padding: 30px 40px;
+}
+
+/* ... todo o resto do seu CSS ... */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.header h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+}
+.profile-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  color: #444;
+}
+.dashboard-cards {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+.card {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.card h3 {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 10px 0;
+  font-weight: 500;
+}
+.card p {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+.orders-table-section {
+  background-color: #ffffff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.orders-table-section h2 {
+  font-size: 20px;
+  margin: 0 0 20px 0;
+  color: #333;
+}
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.orders-table th, .orders-table td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+.orders-table th {
+  background-color: #f9f9f9;
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.orders-table td {
+  font-size: 14px;
+  color: #555;
+}
+.orders-table tr:last-child td {
+  border-bottom: none;
+}

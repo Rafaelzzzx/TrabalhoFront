@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from '../styles/Loja.module.css';
 import api from '../services/api'; // Importamos a configuração do axios
+
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiUserCheck
 } from 'react-icons/fi';

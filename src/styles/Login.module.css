@@ -1,74 +1,93 @@
-/* Conteúdo para: styles/Login.module.css */
-
-.loginContainer {
+/* Fundo com gradiente Azul Escuro -> Azul Claro */
+.container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   width: 100vw;
-  /* Gradiente de fundo similar ao da sua imagem */
-  background: linear-gradient(to bottom right, #4b6cb7, #c3cfe2);
-}
-
-.loginBox {
-  background: #f0f0f0; /* Fundo cinza claro da caixa */
-  padding: 2.5rem 3rem;
-  border-radius: 20px; /* Bordas arredondadas */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 400px;
-}
-
-.loginBox h2 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 2rem;
-  color: #333;
+  background: linear-gradient(135deg, #1e2a45 0%, #6b8ce0 100%);
   font-family: Arial, sans-serif;
-  font-weight: bold;
 }
 
+/* O Cartão Cinza Central */
+.loginBox {
+  background-color: #d9d9d9;
+  padding: 40px;
+  border-radius: 20px;
+  width: 350px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Título LOGIN */
+.title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+/* Grupo de Inputs (Label + Input) */
 .inputGroup {
-  margin-bottom: 1.5rem;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .inputGroup label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #555;
-  font-family: Arial, sans-serif;
-  font-size: 0.9rem;
+  font-weight: bold;
+  font-size: 14px;
+  color: #000;
 }
 
-.inputGroup input {
+/* Estilo dos Inputs (Cinza mais escuro e arredondado) */
+.input {
+  background-color: #bfbfbf;
+  border: none;
+  height: 45px;
+  border-radius: 10px;
+  padding: 0 15px;
+  font-size: 16px;
+  outline: none;
   width: 100%;
-  padding: 0.9rem;
-  border: none; /* Sem borda, como na imagem */
-  background-color: #d9d9d9; /* Cor do input da imagem */
-  border-radius: 8px;
-  box-sizing: border-box; /* Garante que o padding não mude a largura */
+  box-sizing: border-box; /* Garante que o padding não estoure a caixa */
 }
 
+/* Container para os dois botões ficarem lado a lado */
 .buttonContainer {
   display: flex;
   justify-content: space-between;
-  gap: 1rem; /* Espaço entre os botões */
-  margin-top: 2rem;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-.loginButton {
-  flex: 1; /* Faz os botões dividirem o espaço */
-  padding: 0.9rem;
+/* Botões Verdes */
+.greenButton {
+  background-color: #00ff40; /* Verde neon vibrante */
+  color: #000;
   border: none;
   border-radius: 8px;
-  background-color: #4CAF50; /* Verde, como na imagem */
-  color: white;
+  padding: 15px 10px;
   font-weight: bold;
+  font-size: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 0.8rem; /* Fonte um pouco menor para caber */
+  flex: 1; /* Faz os botões terem o mesmo tamanho */
+  text-transform: uppercase;
+  transition: transform 0.2s;
 }
 
-.loginButton:hover {
-  background-color: #45a049; /* Um verde um pouco mais escuro ao passar o mouse */
+.greenButton:hover {
+  background-color: #00cc33; /* Verde um pouco mais escuro no mouse */
+  transform: scale(1.02);
+}
+
+/* Mensagem de erro */
+.erro {
+  color: red;
+  text-align: center;
+  font-size: 14px;
+  margin-top: 10px;
 }

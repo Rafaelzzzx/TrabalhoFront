@@ -1,7 +1,7 @@
 import { useState } from "react";
 import api from "../services/api";
 import { useRouter } from "next/router";
-import styles from '../styles/Login.module.css'; // Importa o CSS que criamos acima
+import styles from '../styles/Login.module.css';
 
 export default function Login() {
   const router = useRouter();
@@ -9,35 +9,30 @@ export default function Login() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    setErro(""); // Limpa erros antigos
+  async function handleLogin(levelEscolhido) {
+    setErro("");
 
     try {
       const r = await api.post('/login', {
         contact_email: email,
-        pwd: senha
+        pwd: senha,
+        level: levelEscolhido   // ✔ CORRETO
       });
 
-      // Salva o usuário no navegador
       localStorage.setItem("usuario", JSON.stringify(r.data));
 
-      // Redireciona baseado no tipo que veio da API
-      if (r.data.tipo === "ADMIN") router.push("/admin");
-      else if (r.data.tipo === "FORNECEDOR") router.push("/fornecedor");
-      else if (r.data.tipo === "LOGISTA") router.push("/loja");
-      else router.push("/loja"); // Fallback padrão
+      if (r.data.level === "admin") router.push("/admin");
+      if (r.data.level === "logista") router.push("/loja");
+      if (r.data.level === "fornecedor") router.push("/fornecedor");
 
     } catch (err) {
       setErro("E-mail ou senha inválidos");
-      console.error(err);
     }
   }
 
   return (
     <div className={styles.container}>
-
-      <form onSubmit={handleLogin} className={styles.loginBox}>
+      <div className={styles.loginBox}>   {/* ✔ REMOVIDO <form> */}
 
         <h1 className={styles.title}>LOGIN</h1>
 
@@ -63,19 +58,26 @@ export default function Login() {
           />
         </div>
 
-        {/* Área dos dois botões verdes */}
         <div className={styles.buttonContainer}>
-          <button type="submit" className={styles.greenButton}>
-            Logar como<br/>Fornecedor
+          <button
+            type="button"
+            className={styles.greenButton}
+            onClick={() => handleLogin("logista")}
+          >
+            Logar como<br />Logista
           </button>
 
-          <button type="submit" className={styles.greenButton}>
-            Logar como<br/>Logista
+          <button
+            type="button"
+            className={styles.greenButton}
+            onClick={() => handleLogin("fornecedor")}
+          >
+            Logar como<br />Fornecedor
           </button>
         </div>
 
         {erro && <p className={styles.erro}>{erro}</p>}
-      </form>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-
+import api from '../services/api';
 import styles from '../styles/AdminLogin.module.css';
 
 export default function AdminLogin() {
@@ -8,21 +8,25 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (email === "admin@admin.com" && senha === "123456") {
-      const dadosAdmin = {
-        nome: "Administrador Chefe",
-        email: email,
-        tipo: "ADMIN"
-      };
-      localStorage.setItem('usuario', JSON.stringify(dadosAdmin));
+    try {
+      const response = await api.post('/login', {
+        contact_email: email,
+        pwd: senha,
+        level: "admin"
+      });
 
-      // Redireciona para o dashboard (assumindo que ele está em /admin/dashboard)
+      const dados = response.data;
+
+      localStorage.setItem("usuario", JSON.stringify(dados));
+
       router.push('/admin/dashboard');
-    } else {
-      alert("Credenciais de administrador inválidas!");
+
+    } catch (err) {
+      console.error(err);
+      alert("Credenciais inválidas!");
     }
   };
 

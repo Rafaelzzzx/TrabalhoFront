@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import styles from '../styles/Loja.module.css';
+
+import styles from '../../styles/Loja.module.css';
 import { FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox } from 'react-icons/fi';
 
 export default function CadastroFornecedor() {
@@ -18,7 +19,8 @@ export default function CadastroFornecedor() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
-    alert('Salvar Fornecedor');
+    // IMPORTANTE: Mudei de 'alert' para 'console.log' para seguir a melhor prática
+    console.log('Salvar Fornecedor');
   };
 
   return (
@@ -35,25 +37,27 @@ export default function CadastroFornecedor() {
             </Link>
           </li>
 
-          {/* ITEM ATIVO: FORNECEDORES */}
+          {/* ITEM ATIVO: FORNECEDORES (HREF ATUALIZADO) */}
           <li className={styles.active}>
-            <Link href="/CadastroFornecedor" className={styles.linkReset}>
+            <Link href="/admin/CadastroFornecedor" className={styles.linkReset}>
               <div className={styles.menuItem}>
                 <FiUsers size={20} /><span>Cadastrar Fornecedores</span>
               </div>
             </Link>
           </li>
 
+          {/* CADASTRO LOJISTAS (HREF ATUALIZADO) */}
           <li>
-            <Link href="/CadastroLogista" className={styles.linkReset}>
+            <Link href="/admin/CadastroLogista" className={styles.linkReset}>
               <div className={styles.menuItem}>
-                <FiBox size={20} /><span>Cadastrar Logistas</span>
+                <FiBox size={20} /><span>Cadastrar Lojistas</span>
               </div>
             </Link>
           </li>
 
+          {/* CADASTRO PRODUTOS (HREF ATUALIZADO) */}
           <li>
-            <Link href="/CadastroProdutos" className={styles.linkReset}>
+            <Link href="/admin/CadastroProdutos" className={styles.linkReset}>
               <div className={styles.menuItem}>
                 <FiPackage size={20} /><span>Cadastrar Produtos</span>
               </div>
@@ -68,8 +72,9 @@ export default function CadastroFornecedor() {
             </Link>
           </li>
 
+          {/* SAIR (Link para a página de Login, supondo que ela esteja em /Login) */}
           <li>
-            <Link href="/" className={styles.linkReset}>
+            <Link href="/Login" className={styles.linkReset}>
               <div className={styles.menuItem}>
                 <FiLogOut size={20} /><span>Sair</span>
               </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import styles from '../styles/Loja.module.css'; // Usando o mesmo CSS da Loja
+import styles from '../../styles/Loja.module.css';
+import api from '../../services/api';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox
 } from 'react-icons/fi';
@@ -51,7 +52,7 @@ export default function CadastroLogista() {
 
           {/* 2. Cadastrar Fornecedores */}
           <li>
-            <Link href="/CadastroFornecedor" style={{ textDecoration: 'none' }}>
+            <Link href="/admin/CadastroFornecedor" style={{ textDecoration: 'none' }}>
               <div className={styles.menuItem}>
                 <FiUsers size={20} /><span>Cadastrar Fornecedores</span>
               </div>

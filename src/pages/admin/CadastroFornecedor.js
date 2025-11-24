@@ -6,6 +6,7 @@ import styles from '../../styles/Loja.module.css';
 import { FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox } from 'react-icons/fi';
 
 export default function CadastroFornecedor() {
+  const [loading, setLoading] = useState(false); // 🔥 Novo estado para Loading
 
   const [formData, setFormData] = useState({
     supplier_name: '',
@@ -17,7 +18,7 @@ export default function CadastroFornecedor() {
     phone_number: '',
     emailContato: '',
     gerarAutomaticamente: false,
-    senhaManual: '' // caso você queira depois
+    senhaManual: ''
   });
 
   const handleChange = (e) => {
@@ -27,6 +28,7 @@ export default function CadastroFornecedor() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // ⏳ Ativa o loading
 
     const dadosParaBackend = {
       supplier_name: formData.supplier_name,
@@ -43,15 +45,30 @@ export default function CadastroFornecedor() {
     try {
       const response = await api.post('/api/fornecedores/cadastroFornecedor', dadosParaBackend);
 
+      // ✅ Sucesso: Mostra os dados gerados
       alert(
-        "Fornecedor cadastrado!\n" +
-        "Login: " + response.data.usuarioGerado.user + "\n" +
-        "Senha: " + response.data.usuarioGerado.pwd
+        `✅ Sucesso!\n\nFornecedor: ${response.data.fornecedor.supplier_name}\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.usuarioGerado.pwd}`
       );
 
+      // Limpa o formulário
+      setFormData({
+        supplier_name: '', responsavel: '', contact_email: '', rua: '',
+        cidade: '', estado: '', phone_number: '', emailContato: '',
+        gerarAutomaticamente: false, senhaManual: ''
+      });
+
     } catch (error) {
-      console.error("Erro ao cadastrar:", error);
-      alert("Erro ao cadastrar fornecedor.");
+      console.error("Erro no cadastro:", error);
+
+      // ❌ Tratamento de Erro Inteligente
+      if (error.response && error.response.data && error.response.data.error) {
+        // Mostra a mensagem exata que veio do Backend (ex: Nome duplicado)
+        alert(`❌ Erro: ${error.response.data.error}`);
+      } else {
+        alert("❌ Erro ao conectar com o servidor. Tente novamente.");
+      }
+    } finally {
+      setLoading(false); // ⏹ Desativa o loading independente do resultado
     }
   };
 
@@ -67,7 +84,6 @@ export default function CadastroFornecedor() {
               </div>
             </Link>
           </li>
-
           <li className={styles.active}>
             <Link href="/admin/CadastroFornecedor" className={styles.linkReset}>
               <div className={styles.menuItem}>
@@ -75,7 +91,6 @@ export default function CadastroFornecedor() {
               </div>
             </Link>
           </li>
-
           <li>
             <Link href="/admin/CadastroLogista" className={styles.linkReset}>
               <div className={styles.menuItem}>
@@ -83,7 +98,6 @@ export default function CadastroFornecedor() {
               </div>
             </Link>
           </li>
-
           <li>
             <Link href="/admin/CadastroProdutos" className={styles.linkReset}>
               <div className={styles.menuItem}>
@@ -91,7 +105,6 @@ export default function CadastroFornecedor() {
               </div>
             </Link>
           </li>
-
           <li>
             <Link href="/admin/perfil" className={styles.linkReset}>
               <div className={styles.menuItem}>
@@ -99,7 +112,6 @@ export default function CadastroFornecedor() {
               </div>
             </Link>
           </li>
-
           <li>
             <Link href="/Login" className={styles.linkReset}>
               <div className={styles.menuItem}>
@@ -119,8 +131,15 @@ export default function CadastroFornecedor() {
           <h2 className={styles.sectionTitle}>Dados do Fornecedor</h2>
 
           <div className={styles.fieldGroup}>
-            <label>Nome da loja</label>
-            <input type="text" name="supplier_name" className={styles.inputLong} value={formData.supplier_name} onChange={handleChange} />
+            <label>Nome da loja <span style={{color:'red'}}>*</span></label>
+            <input
+              type="text"
+              name="supplier_name"
+              className={styles.inputLong}
+              value={formData.supplier_name}
+              onChange={handleChange}
+              required // 🔥 Validação HTML5
+            />
           </div>
 
           <div className={styles.fieldGroup}>
@@ -129,8 +148,15 @@ export default function CadastroFornecedor() {
           </div>
 
           <div className={styles.fieldGroup}>
-            <label>Email</label>
-            <input type="email" name="contact_email" className={styles.inputLong} value={formData.contact_email} onChange={handleChange} />
+            <label>Email (Login) <span style={{color:'red'}}>*</span></label>
+            <input
+              type="email"
+              name="contact_email"
+              className={styles.inputLong}
+              value={formData.contact_email}
+              onChange={handleChange}
+              required // 🔥 Validação HTML5
+            />
           </div>
 
           <h2 className={styles.sectionTitle}>Endereço</h2>
@@ -161,7 +187,7 @@ export default function CadastroFornecedor() {
             </div>
 
             <div className={styles.fieldGroup}>
-              <label>Email</label>
+              <label>Email Secundário</label>
               <input type="email" name="emailContato" className={styles.inputMedium} value={formData.emailContato} onChange={handleChange} />
             </div>
           </div>
@@ -169,7 +195,14 @@ export default function CadastroFornecedor() {
           {!formData.gerarAutomaticamente && (
             <div className={styles.fieldGroup}>
               <label>Senha (opcional)</label>
-              <input type="password" name="senhaManual" className={styles.inputMedium} value={formData.senhaManual} onChange={handleChange} />
+              <input
+                type="password"
+                name="senhaManual"
+                className={styles.inputMedium}
+                value={formData.senhaManual}
+                onChange={handleChange}
+                placeholder="Deixe vazio para gerar auto"
+              />
             </div>
           )}
 
@@ -180,7 +213,15 @@ export default function CadastroFornecedor() {
               Gerar senha e usuário automaticamente
             </label>
 
-            <button type="submit" className={styles.submitButton}>Criar Fornecedor</button>
+            {/* 🔥 Botão inteligente com Loading */}
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={loading}
+              style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+            >
+              {loading ? 'Cadastrando...' : 'Criar Fornecedor'}
+            </button>
           </div>
         </form>
       </main>

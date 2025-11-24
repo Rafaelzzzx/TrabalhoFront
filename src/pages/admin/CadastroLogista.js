@@ -7,17 +7,20 @@ import {
 } from 'react-icons/fi';
 
 export default function CadastroLogista() {
-  // Estado do formulário para Lojista
+  const [loading, setLoading] = useState(false); // 🔥 Estado de loading
+
   const [formData, setFormData] = useState({
     nomeLoja: '',
+    cnpj: '', // 🔥 NOVO CAMPO OBRIGATÓRIO NO SCHEMA
     responsavel: '',
-    email: '',
+    email: '', // Email Principal (Login)
     rua: '',
     cidade: '',
     estado: '',
     telefone: '',
-    emailContato: '',
-    gerarAutomaticamente: false
+    emailContato: '', // Email Secundário
+    gerarAutomaticamente: false,
+    senhaManual: '' // 🔥 NOVO CAMPO DE SENHA
   });
 
   const handleChange = (e) => {
@@ -28,20 +31,73 @@ export default function CadastroLogista() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Dados do Logista:', formData);
-    alert('Lojista salvo com sucesso (Simulação)');
+    setLoading(true);
+
+    // 🔥 Mapeamento dos campos do Front-end (pt-br) para o Backend (Schema)
+    const dadosParaBackend = {
+      store_name: formData.nomeLoja,
+      cnpj: formData.cnpj, // Mapeado
+      contact_email: formData.email, // Mapeado para o login/email principal
+      address: `${formData.rua}, ${formData.cidade}, ${formData.estado}`, // Combinação simples para o address
+      phone_number: formData.telefone,
+      // O emailContato não é usado pelo seu Schema de Loja, mas vamos enviá-lo caso você adicione um campo secundário.
+      emailContatoSecundario: formData.emailContato,
+
+      pwd: formData.gerarAutomaticamente ? null : formData.senhaManual
+    };
+
+    // Seu backend espera que a rua, cidade e estado venham separadamente.
+    // O seu Schema pede um campo 'address' único. Vou enviar a rua como 'address'
+    // Se o seu Schema de Loja tiver campos separados para rua, cidade, estado, ajuste o mapeamento.
+    // ***Assumindo que o campo 'address' no backend deve ser a Rua***
+    const dadosFinaisParaBackend = {
+      store_name: formData.nomeLoja,
+      cnpj: formData.cnpj,
+      contact_email: formData.email,
+      address: formData.rua, // Enviando a Rua para o campo 'address'
+      phone_number: formData.telefone,
+      // O backend não usa responsavel, cidade, estado. Mantenha por enquanto no state.
+      pwd: formData.gerarAutomaticamente ? null : formData.senhaManual
+    };
+
+    try {
+      const response = await api.post('/api/lojas/cadastroLoja', dadosFinaisParaBackend);
+
+      alert(
+        `✅ Sucesso! Loja cadastrada.\n\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.senhaUsada}`
+      );
+
+      // Limpa o formulário
+      setFormData({
+        nomeLoja: '', cnpj: '', responsavel: '', email: '', rua: '', cidade: '', estado: '',
+        telefone: '', emailContato: '', gerarAutomaticamente: false, senhaManual: ''
+      });
+
+    } catch (error) {
+      console.error("Erro ao cadastrar Logista:", error);
+
+      // Tratamento de Erro para mensagens específicas do backend
+      const errorMessage = error.response && error.response.data && (error.response.data.erro || (error.response.data.erros && error.response.data.erros.join('\n')));
+
+      if (errorMessage) {
+        alert(`❌ Erro de Cadastro: ${errorMessage}`);
+      } else {
+        alert("❌ Ocorreu um erro interno ao cadastrar o logista.");
+      }
+
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className={styles['dashboard-container']}>
 
-      {/* --- SIDEBAR (IGUAL AO DO FORNECEDOR, MAS COM ITEM DIFERENTE ATIVO) --- */}
+      {/* --- SIDEBAR --- (Sem mudanças) */}
       <nav className={styles.sidebar}>
         <ul>
-
-          {/* 1. Dashboard */}
           <li>
             <Link href="/loja" style={{ textDecoration: 'none' }}>
               <div className={styles.menuItem}>
@@ -49,8 +105,6 @@ export default function CadastroLogista() {
               </div>
             </Link>
           </li>
-
-          {/* 2. Cadastrar Fornecedores */}
           <li>
             <Link href="/admin/CadastroFornecedor" style={{ textDecoration: 'none' }}>
               <div className={styles.menuItem}>
@@ -58,26 +112,21 @@ export default function CadastroLogista() {
               </div>
             </Link>
           </li>
-
-          {/* 3. Cadastrar Lojistas (ESTE É O ATIVO AQUI) */}
           <li className={styles.active}>
-            <Link href="/CadastroLogista" style={{ textDecoration: 'none' }}>
+            {/* Corrigindo a rota ativa para ser /admin/CadastroLogista */}
+            <Link href="/admin/CadastroLogista" style={{ textDecoration: 'none' }}>
               <div className={styles.menuItem}>
                 <FiBox size={20} /><span>Cadastrar Lojistas</span>
               </div>
             </Link>
           </li>
-
-          {/* 4. Cadastrar Produtos */}
           <li>
-            <Link href="/CadastroProdutos" style={{ textDecoration: 'none' }}>
+            <Link href="/admin/CadastroProdutos" style={{ textDecoration: 'none' }}>
               <div className={styles.menuItem}>
                 <FiPackage size={20} /><span>Cadastrar Produtos</span>
               </div>
             </Link>
           </li>
-
-          {/* 5. Perfil */}
           <li>
             <Link href="/admin/perfil" style={{ textDecoration: 'none' }}>
               <div className={styles.menuItem}>
@@ -85,10 +134,8 @@ export default function CadastroLogista() {
               </div>
             </Link>
           </li>
-
-          {/* 6. Sair */}
           <li>
-            <Link href="/" style={{ textDecoration: 'none' }}>
+            <Link href="/Login" style={{ textDecoration: 'none' }}>
               <div className={styles.menuItem}>
                 <FiLogOut size={20} /><span>Sair</span>
               </div>
@@ -109,12 +156,25 @@ export default function CadastroLogista() {
           <h2 className={styles.sectionTitle}>Dados do Lojista</h2>
 
           <div className={styles.fieldGroup}>
-            <label>Nome da Loja</label>
+            <label>Nome da Loja <span style={{color:'red'}}>*</span></label>
             <input
               type="text"
               name="nomeLoja"
               className={styles.inputLong}
               value={formData.nomeLoja} onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label>CNPJ <span style={{color:'red'}}>*</span></label>
+            <input
+              type="text"
+              name="cnpj"
+              className={styles.inputLong}
+              value={formData.cnpj} onChange={handleChange}
+              placeholder="Ex: 99.999.999/0001-88"
+              required
             />
           </div>
 
@@ -129,12 +189,13 @@ export default function CadastroLogista() {
           </div>
 
           <div className={styles.fieldGroup}>
-            <label>Email Principal</label>
+            <label>Email Principal (Login) <span style={{color:'red'}}>*</span></label>
             <input
               type="email"
               name="email"
               className={styles.inputLong}
               value={formData.email} onChange={handleChange}
+              required
             />
           </div>
 
@@ -195,6 +256,20 @@ export default function CadastroLogista() {
             </div>
           </div>
 
+          {/* 🔥 NOVO CAMPO DE SENHA */}
+          {!formData.gerarAutomaticamente && (
+            <div className={styles.fieldGroup}>
+              <label>Senha (opcional)</label>
+              <input
+                type="password"
+                name="senhaManual"
+                className={styles.inputMedium}
+                value={formData.senhaManual} onChange={handleChange}
+                placeholder="Deixe vazio para gerar auto"
+              />
+            </div>
+          )}
+
           {/* Rodapé do formulário */}
           <div className={styles.footer}>
             <label className={styles.checkboxContainer}>
@@ -207,8 +282,14 @@ export default function CadastroLogista() {
               Gerar senha e usuário automaticamente
             </label>
 
-            <button type="submit" className={styles.submitButton}>
-              Criar Lojista
+            {/* Botão com Loading */}
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={loading}
+              style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+            >
+              {loading ? 'Cadastrando...' : 'Criar Lojista'}
             </button>
           </div>
 

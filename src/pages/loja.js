@@ -163,6 +163,176 @@ const Loja = () => {
       </main>
     </div>
   );
+
+  const BuscaFornecedores = () => {
+    // Estados dos inputs de busca
+    const [searchId, setSearchId] = useState('');
+    const [searchName, setSearchName] = useState('');
+    const [searchEmail, setSearchEmail] = useState('');
+
+    // Estado dos dados
+    const [fornecedores, setFornecedores] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Controle de paginação (Carrossel)
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const itemsPerPage = 5;
+
+    // Função de Busca
+    const handleSearch = async () => {
+      setLoading(true);
+      setCurrentIndex(0); // Reseta paginação ao buscar
+      try {
+        // Estratégia: Buscar TODOS e filtrar no front (mais flexível para multi-campos)
+        // OU buscar na API se tiver rota específica.
+        // Dado o requisito "deixar em branco puxa todos", faremos o seguinte:
+
+        const response = await api.get('/cadastroFornecedor'); // Rota que retorna todos
+        let dados = response.data;
+
+        // Filtragem no Front-end baseada nos inputs (se houver algo digitado)
+        if (searchId) {
+          dados = dados.filter(f => f._id.includes(searchId));
+        }
+        if (searchName) {
+          dados = dados.filter(f => f.supplier_name.toLowerCase().includes(searchName.toLowerCase()));
+        }
+        if (searchEmail) {
+          dados = dados.filter(f => f.contact_email.toLowerCase().includes(searchEmail.toLowerCase()));
+        }
+
+        setFornecedores(dados);
+      } catch (error) {
+        console.error("Erro ao buscar fornecedores:", error);
+        alert("Erro ao buscar dados.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Função de Deletar
+    const handleDelete = async (id) => {
+      const confirm = window.confirm("Tem certeza? Isso apagará o fornecedor e o usuário de acesso.");
+      if (!confirm) return;
+
+      try {
+        await api.delete(`/cadastroFornecedor/${id}`);
+
+        // Remove da lista visualmente
+        setFornecedores(prev => prev.filter(item => item._id !== id));
+        alert("Fornecedor removido com sucesso!");
+      } catch (error) {
+        console.error("Erro ao deletar:", error);
+        alert("Erro ao deletar fornecedor.");
+      }
+    };
+
+    // Funções do Carrossel (Próximo e Anterior)
+    const nextSlide = () => {
+      if (currentIndex + itemsPerPage < fornecedores.length) {
+        setCurrentIndex(currentIndex + itemsPerPage);
+      }
+    };
+
+    const prevSlide = () => {
+      if (currentIndex - itemsPerPage >= 0) {
+        setCurrentIndex(currentIndex - itemsPerPage);
+      }
+    };
+
+    // Fatiar a lista para exibir apenas 5
+    const visibleItems = fornecedores.slice(currentIndex, currentIndex + itemsPerPage);
+
+    return (
+      <div className={styles.container}>
+        <h2>Gerenciar Fornecedores</h2>
+
+        {/* Área de Busca */}
+        <div className={styles.searchBar}>
+          <div className={styles.inputGroup}>
+              <FiHash className={styles.icon} />
+              <input
+                  type="text"
+                  placeholder="Buscar por ID"
+                  value={searchId}
+                  onChange={(e) => setSearchId(e.target.value)}
+              />
+          </div>
+
+          <div className={styles.inputGroup}>
+              <FiUser className={styles.icon} />
+              <input
+                  type="text"
+                  placeholder="Buscar por Nome"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+              />
+          </div>
+
+          <div className={styles.inputGroup}>
+              <FiMail className={styles.icon} />
+              <input
+                  type="text"
+                  placeholder="Buscar por Email"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+              />
+          </div>
+
+          <button onClick={handleSearch} className={styles.btnSearch}>
+              <FiSearch /> Buscar
+          </button>
+        </div>
+
+        {/* Resultados / Carrossel */}
+        {fornecedores.length > 0 && (
+          <div className={styles.resultsArea}>
+
+              <button
+                  className={styles.navButton}
+                  onClick={prevSlide}
+                  disabled={currentIndex === 0}
+              >
+                  <FiChevronLeft size={24} />
+              </button>
+
+              <div className={styles.cardsContainer}>
+                  {visibleItems.map((fornecedor) => (
+                      <div key={fornecedor._id} className={styles.card}>
+                          <div className={styles.cardHeader}>
+                              <h3>{fornecedor.supplier_name}</h3>
+                              <button
+                                  className={styles.btnDelete}
+                                  onClick={() => handleDelete(fornecedor._id)}
+                                  title="Deletar Fornecedor e Usuário"
+                              >
+                                  <FiTrash2 />
+                              </button>
+                          </div>
+                          <p><strong>ID:</strong> <span className={styles.smallId}>{fornecedor._id}</span></p>
+                          <p><strong>Email:</strong> {fornecedor.contact_email}</p>
+                          <p><strong>Resp:</strong> {fornecedor.responsavel}</p>
+                      </div>
+                  ))}
+              </div>
+
+              <button
+                  className={styles.navButton}
+                  onClick={nextSlide}
+                  disabled={currentIndex + itemsPerPage >= fornecedores.length}
+              >
+                  <FiChevronRight size={24} />
+              </button>
+          </div>
+        )}
+
+        {loading && <p>Carregando...</p>}
+        {!loading && fornecedores.length === 0 && <p className={styles.noData}>Nenhum fornecedor carregado. Clique em buscar.</p>}
+      </div>
+    );
+  };
+
+  export default BuscaFornecedores;
 };
 
 export default Loja;

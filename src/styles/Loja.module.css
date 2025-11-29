@@ -1,14 +1,16 @@
 /* Arquivo: src/styles/Loja.module.css */
 
-/* Configuração global e de layout */
+/* =======================================================
+   CONFIGURAÇÃO GLOBAL E LAYOUT
+   ======================================================= */
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif; /* Usando uma fonte moderna */
+  font-family: 'Inter', sans-serif;
   background-color: #f4f7fa;
 }
 
-/* 1. Estilos da Sidebar */
+/* --- Sidebar --- */
 .sidebar {
   width: 240px;
   background-color: #0c2b4e;
@@ -48,14 +50,20 @@
   background-color: #ffffff;
   color: #0c2b4e;
   font-weight: bold;
-  /* Para criar o efeito de "corte" arredondado na borda */
   border-radius: 8px 0 0 8px;
-  margin-right: -1px; /* Tira a linha do content */
+  margin-right: -1px;
   position: relative;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* 2. Estilos do Conteúdo Principal */
+.linkReset {
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  display: block;
+}
+
+/* --- Conteúdo Principal --- */
 .main-content {
   flex: 1;
   padding: 30px 40px;
@@ -73,76 +81,16 @@
   margin: 0;
   font-weight: 700;
 }
-.profile-area {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  color: #444;
-}
-.dashboard-cards {
-  display: flex;
-  gap: 25px;
-  margin-bottom: 30px;
-}
-.card {
-  flex: 1;
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-left: 5px solid #0c2b4e;
-}
-.card h3 {
-  font-size: 16px;
-  color: #666;
-  margin: 0 0 10px 0;
-  font-weight: 500;
-}
-.card p {
-  font-size: 32px;
-  font-weight: bold;
-  color: #333;
-  margin: 0;
-}
-.orders-table-section {
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.orders-table-section h2 {
-  font-size: 20px;
-  margin: 0 0 20px 0;
-  color: #333;
-}
-.orders-table {
-  width: 100%;
-  border-collapse: separate; /* Permite border-radius */
-  border-spacing: 0;
-  text-align: left;
-}
-.orders-table th, .orders-table td {
-  padding: 15px;
-  border-bottom: 1px solid #eee;
-}
-.orders-table th {
-  background-color: #f9f9f9;
-  color: #888;
-  font-size: 12px;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.orders-table td {
-  font-size: 14px;
-  color: #555;
-}
-.orders-table tr:last-child td {
-  border-bottom: none;
+
+.divider {
+  margin: 40px 0;
+  border: 0;
+  border-top: 1px solid #ddd;
 }
 
-/* --- Estilos para Formulários e Campos --- */
-
+/* =======================================================
+   ESTILOS DE FORMULÁRIO (Card de Cadastro)
+   ======================================================= */
 .formCard {
   background-color: #ffffff;
   padding: 30px;
@@ -188,12 +136,12 @@
   outline: none;
 }
 
-.inputLong {
-  width: 100%;
-}
+.inputLong { width: 100%; }
+.inputMedium { flex: 1; }
 
-.inputMedium {
-  flex: 1;
+.requiredAsterisk {
+  color: red;
+  margin-left: 4px;
 }
 
 .row {
@@ -202,12 +150,8 @@
   margin-bottom: 20px;
 }
 
-/* Media Query para Responsividade do Formulário */
 @media (max-width: 768px) {
-  .row {
-    flex-direction: column;
-    gap: 0;
-  }
+  .row { flex-direction: column; gap: 0; }
 }
 
 .footer {
@@ -219,55 +163,7 @@
   border-top: 1px solid #eee;
 }
 
-.submitButton {
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.submitButton:hover {
-  background-color: #45a049;
-  transform: translateY(-2px);
-}
-
-.submitButton:disabled {
-    cursor: not-allowed !important;
-    opacity: 0.5 !important;
-    transform: none;
-    box-shadow: none;
-}
-
-/* Estilo para Cancelar no Modal (AGORA VERDE) */
-.btnCancel {
-    background-color: #28a745; /* Verde Bootstrap Success */
-    border-color: #28a745;
-    color: white;
-}
-.btnCancel:hover {
-    background-color: #218838; /* Verde mais escuro no hover */
-    border-color: #1e7e34;
-}
-
-/* Novo Estilo para o Botão Principal de Desativação (VERMELHO) */
-.btnDanger {
-    background-color: #dc3545; /* Vermelho Bootstrap Danger */
-    border-color: #dc3545;
-    color: white;
-}
-.btnDanger:hover {
-    background-color: #c82333; /* Vermelho mais escuro no hover */
-    border-color: #bd2130;
-}
-
-
-/* Estilos para Checkbox Personalizado */
+/* Checkbox Personalizado */
 .checkboxContainer {
   display: block;
   position: relative;
@@ -279,74 +175,30 @@
   color: #555;
   font-weight: 500;
 }
-
 .checkboxContainer input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
+  position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0;
 }
-
 .checkmark {
-  position: absolute;
-  top: 1px;
-  left: 0;
-  height: 22px;
-  width: 22px;
-  background-color: #eee;
-  border-radius: 4px;
+  position: absolute; top: 1px; left: 0; height: 22px; width: 22px;
+  background-color: #eee; border-radius: 4px; border: 1px solid #ccc;
   transition: background-color 0.3s;
-  border: 1px solid #ccc;
 }
-
-.checkboxContainer:hover input ~ .checkmark {
-  background-color: #ddd;
-}
-
+.checkboxContainer:hover input ~ .checkmark { background-color: #ddd; }
 .checkboxContainer input:checked ~ .checkmark {
-  background-color: #0c2b4e;
-  border-color: #0c2b4e;
+  background-color: #0c2b4e; border-color: #0c2b4e;
 }
-
 .checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
+  content: ""; position: absolute; display: none;
 }
-
-.checkboxContainer input:checked ~ .checkmark:after {
-  display: block;
-}
-
+.checkboxContainer input:checked ~ .checkmark:after { display: block; }
 .checkboxContainer .checkmark:after {
-  left: 8px;
-  top: 4px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 3px 3px 0;
-  transform: rotate(45deg);
-}
-
-.linkReset {
-  text-decoration: none;
-  color: inherit;
-  width: 100%;
-  display: block;
-}
-
-/* Linha Divisória */
-.divider {
-    margin: 40px 0;
-    border: 0;
-    border-top: 1px solid #ddd;
+  left: 8px; top: 4px; width: 5px; height: 10px;
+  border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg);
 }
 
 /* =======================================================
-   ESTILOS DE BUSCA E LISTA VERTICAL - NOVO ESTILO CARD (GRID)
+   ESTILOS DE BUSCA E LISTA
    ======================================================= */
-
 .search-section {
   background-color: #ffffff;
   padding: 30px;
@@ -394,6 +246,7 @@
   width: 100%;
 }
 
+/* --- Botões Gerais --- */
 .btn-search {
   background-color: #0c2b4e;
   color: white;
@@ -411,91 +264,93 @@
   height: 46px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+.btn-search:hover { background-color: #1a4a7d; transform: translateY(-2px); }
+.btn-search:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
 
-.btn-search:hover {
-  background-color: #1a4a7d;
-  transform: translateY(-2px);
+.submitButton {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-.btn-search:disabled {
-    cursor: not-allowed !important;
-    opacity: 0.5 !important;
-    transform: none;
-    box-shadow: none;
-}
+.submitButton:hover { background-color: #45a049; transform: translateY(-2px); }
+.submitButton:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
 
-/* Contêiner da Lista */
+/* --- Lista Grid (Cards) --- */
 .provider-list-container {
   margin-top: 20px;
-  max-height: 450px;
-  overflow-y: auto;
+  /* max-height removido para deixar crescer naturalmente, ou mantenha se preferir scroll interno */
   padding: 0;
 }
 
-/* --- ESTILOS DA LISTA GRID (Linha de Conteúdo Principal) --- */
-
 .grid-style {
-    display: grid;
-    /* 5 Colunas: Nome(3fr) | ID(1.5fr) | Email(3fr) | Responsável(2fr) | Ações(100px) */
-    grid-template-columns: 3fr 1.5fr 3fr 2fr 100px;
-    gap: 15px;
-    align-items: center;
-    padding: 10px 20px;
-    border-bottom: 1px solid #eee;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+  display: grid;
+  /* 5 Colunas: Nome | ID | Email | Responsável | Ações */
+  grid-template-columns: 3fr 1.5fr 3fr 2fr 100px;
+  gap: 15px;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
 }
 
-/* Linha Individual da Lista (Item) */
 .provider-list-item {
-    composes: grid-style; /* Herda o layout grid */
-    background-color: #fff;
-    margin-bottom: 8px; /* Espaço entre os cards/linhas */
-    border-radius: 8px;
+  composes: grid-style;
+  background-color: #fff;
+  margin-bottom: 8px;
+  border-radius: 8px;
 }
 
-/* Cabeçalho da Lista */
+/* Item quando está expandido */
+.item-expanded {
+  background-color: #eaf5ff !important;
+  margin-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+/* Item quando está desativado (off) */
+.item-status-off {
+  background-color: #f0f0f0 !important;
+  opacity: 0.8;
+}
+
 .provider-list-header {
-    composes: grid-style; /* Herda o layout grid */
-    background-color: #e9ecef;
-    cursor: default;
-    box-shadow: none;
-    margin-bottom: 8px;
-    border-radius: 8px;
+  composes: grid-style;
+  background-color: #e9ecef;
+  cursor: default;
+  box-shadow: none;
+  margin-bottom: 8px;
+  border-radius: 8px;
 }
 
-/* Células de Conteúdo */
 .header-cell {
-    color: #007bff;
-    font-weight: 600;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    min-height: 20px;
-    display: flex;
-    align-items: center;
+  color: #007bff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
 }
-
 .header-cell-actions {
-    composes: header-cell;
-    justify-content: flex-end; /* Alinha o cabeçalho Ações à direita */
+  composes: header-cell;
+  justify-content: flex-end;
+  display: flex;
 }
 
 .detail-cell {
-    color: #000;
-    font-size: 0.95rem;
-    word-break: break-word;
-    min-height: 20px;
-    display: flex;
-    align-items: center;
+  color: #000;
+  font-size: 0.95rem;
+  word-break: break-word;
 }
+.detail-cell-name p { font-weight: bold; margin: 0; }
 
-/* Célula de Nome (Destaque) */
-.detail-cell-name p {
-    font-weight: bold;
-    margin: 0;
-}
-
-
-/* Contêiner para Lixeira e Seta (Ações) */
+/* Ações e Botões da Lista */
 .item-actions {
   display: flex;
   gap: 5px;
@@ -503,9 +358,8 @@
   align-items: center;
 }
 
-/* Botão Delete (Lixeira) */
 .btn-delete {
-  background: #f44336; /* Vermelho forte para exclusão */
+  background: #f44336;
   color: white;
   border: none;
   padding: 8px;
@@ -513,14 +367,10 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
-  flex-shrink: 0;
 }
-.btn-delete:hover {
-  background: #d32f2f;
-  transform: scale(1.05);
-}
+.btn-delete:hover { background: #d32f2f; transform: scale(1.05); }
+.btn-delete:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 
-/* Botão Seta de Detalhe */
 .btn-detail {
   background: transparent;
   border: none;
@@ -529,83 +379,122 @@
   font-size: 20px;
   padding: 8px;
   min-width: 36px;
-  transition: color 0.2s, transform 0.2s;
+  transition: color 0.2s, transform 0.3s;
+}
+.btn-detail:hover { color: #1a4a7d; }
+
+/* Classe para girar a seta */
+.btn-rotated {
+  transform: rotate(90deg);
 }
 
-.btn-detail:hover {
-    color: #1a4a7d;
-}
-
-/* --- ESTILOS DE PAGINAÇÃO --- */
-.paginationControls {
-    margin-top: 20px;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-}
-
-.nav-btn {
-    background-color: #0c2b4e;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.nav-btn:hover:not(:disabled) {
-    background-color: #1a4a7d;
-}
-.nav-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.pageInfo {
-    font-size: 1rem;
-    color: #555;
-    font-weight: 500;
-}
-
-
-/* --- ESTILOS DA LINHA EXPANDIDA (Detalhes) --- */
-
+/* --- Detalhes Expandidos --- */
 .expanded-details-row {
-    grid-column: 1 / -1;
-    padding: 12px 20px;
-    background-color: #f1f8ff; /* Fundo azul claro para destaque */
-    border-top: 1px solid #ddd;
-    border-radius: 0 0 8px 8px;
-    font-size: 0.9rem;
-    color: #444;
-    display: grid;
-    /* Layout de 4 colunas para compactar a informação */
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
-    gap: 8px 15px;
-    margin-top: -8px;
-    margin-bottom: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  grid-column: 1 / -1; /* Se estiver dentro de um grid pai */
+  padding: 12px 20px;
+  background-color: #f1f8ff;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  font-size: 0.9rem;
+  color: #444;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 8px 15px;
+  margin-top: -8px; /* Cola no item de cima */
+  margin-bottom: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-.detail-full-span {
-    grid-column: span 4;
+.detail-full-span { grid-column: span 4; }
+.detail-text-p { margin: 0; }
+.detailLabel { color: #007bff; font-weight: 600; margin-right: 5px; }
+
+/* Cores de Status no Texto */
+.statusOn { color: #28a745; font-weight: bold; }
+.statusOff { color: #dc3545; font-weight: bold; }
+
+/* --- Paginação --- */
+.paginationControls {
+  margin-top: 20px;
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+.nav-btn {
+  background-color: #0c2b4e; color: white; border: none;
+  padding: 8px 12px; border-radius: 6px; cursor: pointer;
+  transition: background-color 0.2s;
+}
+.nav-btn:hover:not(:disabled) { background-color: #1a4a7d; }
+.nav-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+.pageInfo { font-size: 1rem; color: #555; font-weight: 500; }
+
+/* =======================================================
+   MODAL DE CONFIRMAÇÃO (Estilos Adicionados)
+   ======================================================= */
+.modalBackdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.detail-half-span {
-    /* Não precisa de span, é apenas uma célula normal */
+.modalContent {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 450px;
+  width: 90%;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.detail-text-p {
-    margin: 0;
+.modalTitle {
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
 }
 
-.detail-status {
-    font-weight: bold;
+.modalText {
+  margin-bottom: 25px;
+  color: #555;
+  font-size: 1rem;
 }
 
-/* --- ESTILOS DE FEEDBACK --- */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btnCancel {
+  background-color: #6c757d; /* Cinza */
+  color: white;
+  border: none;
+}
+.btnCancel:hover { background-color: #5a6268; }
+
+.btnDanger {
+  background-color: #dc3545; /* Vermelho */
+  color: white;
+  border: none;
+}
+.btnDanger:hover { background-color: #c82333; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =======================================================
+   MENSAGENS E FEEDBACK
+   ======================================================= */
 .alertMessage {
   padding: 15px 20px;
   margin-bottom: 20px;
@@ -613,55 +502,16 @@
   font-size: 16px;
   line-height: 1.4;
   word-break: break-word;
-  white-space: pre-wrap; /* Garante que as quebras de linha no texto sejam mantidas */
+  white-space: pre-wrap;
 }
+.alertMessage p { margin: 5px 0; }
+.messageLine { margin: 5px 0; white-space: pre-wrap; }
 
-.alertMessage p {
-    margin: 5px 0;
-}
+.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
 
-.alertMessage.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.alertMessage.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.alertMessage.info {
-  background-color: #d1ecf1;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
-/* Mensagem de Nenhuma Data */
 .no-data {
-  text-align: center;
-  padding: 40px;
-  color: #777;
-  font-size: 16px;
-  background-color: #fff;
-  border-radius: 8px;
-  margin-top: 20px;
-}
-
-/* --- ESTILOS DO MODAL --- */
-
-.modalBackdrop {
-    /* O estilo de tela cheia com opacidade será mantido no inline do JSX */
-}
-
-.modalContent {
-    /* O estilo do card do modal será mantido no inline do JSX */
-}
-
-.modalActions {
-    display: flex;
-    justify-content: flex-end; /* Alinha os botões à direita */
-    gap: 10px; /* Espaço entre os botões */
-    margin-top: 25px;
+  text-align: center; padding: 40px; color: #777;
+  font-size: 16px; background-color: #fff; border-radius: 8px; margin-top: 20px;
 }

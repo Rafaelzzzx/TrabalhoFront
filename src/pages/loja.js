@@ -332,7 +332,7 @@ const Loja = () => {
     );
   };
 
-  export default BuscaFornecedores;
+
 };
 
 export default Loja;

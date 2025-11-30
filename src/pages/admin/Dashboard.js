@@ -141,7 +141,7 @@ export default function Dashboard() {
                     </li>
 
                     <li>
-                        <Link href="/admin/CadastroProdutos" className={styles.linkReset}>
+                        <Link href="/admin/CadastroProduto" className={styles.linkReset}>
                             <div className={styles.menuItem}>
                                 <FiPackage size={20} /><span>Cadastrar Produtos</span>
                             </div>

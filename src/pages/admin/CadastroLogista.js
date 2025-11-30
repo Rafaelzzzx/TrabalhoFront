@@ -1,14 +1,142 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from '../../styles/Loja.module.css'; // Usando o mesmo arquivo CSS
 import api from '../../services/api';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox,
-  FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight
+  FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight, FiEdit
 } from 'react-icons/fi';
 
+// --- NOVO COMPONENTE: MODAL DE EDIÇÃO PARA LOGISTAS ---
+
+const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
+    // Mapeia os nomes das propriedades do backend (ex: contact_email) para o formulário
+    const initialFormData = {
+        store_name: logista.store_name || '',
+        cnpj: logista.cnpj || '',
+        responsavel: logista.responsavel || '',
+        contact_email: logista.contact_email || '', // Email de login
+        address: logista.address || '', // Rua/Avenida
+        cidade: logista.cidade || '',
+        estado: logista.estado || '',
+        phone_number: logista.phone_number || '',
+        status: logista.status || 'on'
+    };
+
+    const [formData, setFormData] = useState(initialFormData);
+
+    // Garante que o estado interno do formulário é resetado se o 'logista' mudar
+    useEffect(() => {
+        setFormData(initialFormData);
+    }, [logista]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // A função onSave será responsável por chamar a API PUT
+        onSave({ ...formData, _id: logista._id }); // Inclui o ID para a função de salvamento
+    };
+
+    return (
+        <div className={styles.modalBackdrop}>
+            <div className={styles.modalContent} style={{ maxWidth: '600px' }}>
+                <h3 className={styles.modalTitle}>Editar Loja: {logista.store_name}</h3>
+
+                <form onSubmit={handleSubmit}>
+
+                    {/* Linha 1: Nome e CNPJ */}
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                            <label>Nome da Loja</label>
+                            <input type="text" name="store_name" value={formData.store_name} onChange={handleChange} required className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>CNPJ</label>
+                            <input type="text" name="cnpj" value={formData.cnpj || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                    </div>
+
+                    {/* Linha 2: Responsável e Email (Email não deve ser alterado) */}
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                            <label>Responsável</label>
+                            <input type="text" name="responsavel" value={formData.responsavel || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Email (Login)</label>
+                            <input type="email" name="contact_email" value={formData.contact_email} disabled className={styles.inputModal} />
+                        </div>
+                    </div>
+
+                    {/* Linha 3: Telefone */}
+                    <div className={styles.row}>
+                         <div className={styles.fieldGroup}>
+                            <label>Telefone</label>
+                            <input type="text" name="phone_number" value={formData.phone_number || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                    </div>
+
+                    {/* Linha 4: Endereço (3 colunas) */}
+                    <h4 className={styles.sectionTitle} style={{ marginTop: '15px' }}>Endereço</h4>
+                    <div className={styles.row}>
+                        {/* Se o seu CSS usa fieldGroup, ele deve ter flex: 1 para dividir o espaço */}
+                        <div className={styles.fieldGroup}>
+                            <label>Rua/Avenida</label>
+                            <input type="text" name="address" value={formData.address || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Cidade</label>
+                            <input type="text" name="cidade" value={formData.cidade || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Estado (UF)</label>
+                            <input type="text" name="estado" value={formData.estado || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <h4 className={styles.sectionTitle} style={{ marginTop: '15px' }}>Status</h4>
+                     <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                             <label>Status</label>
+                             <select name="status" value={formData.status || 'on'} onChange={handleChange} className={styles.inputModal}>
+                                 <option value="on">Ativo</option>
+                                 <option value="off">Inativo</option>
+                             </select>
+                         </div>
+                    </div>
+
+
+                    <div className={styles.modalActions}>
+                        <button
+                            className={`${styles.submitButton} ${styles.btnCancel}`}
+                            type="button"
+                            onClick={onCancel}
+                            disabled={loading}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            className={styles.submitButton}
+                            type="submit"
+                            disabled={loading}
+                        >
+                            {loading ? 'Salvando...' : 'Salvar Alterações'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+
 // ============================================================================
-// COMPONENTE: BuscaLogistas
+// COMPONENTE: BuscaLogistas (Com lógica de Edição e Ações Refatorada)
 // ============================================================================
 const BuscaLogistas = () => {
   const [searchId, setSearchId] = useState('');
@@ -24,9 +152,10 @@ const BuscaLogistas = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [message, setMessage] = useState(null);
-
-  // NOVO ESTADO: Ação Atual ('deactivate' ou 'delete')
   const [currentAction, setCurrentAction] = useState('deactivate');
+
+  // ⭐️ NOVO ESTADO PARA EDIÇÃO
+  const [editingLogista, setEditingLogista] = useState(null);
 
   // Paginação
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,6 +173,7 @@ const BuscaLogistas = () => {
     setMessage(null);
     setCurrentIndex(0);
     setExpandedId(null);
+    setEditingLogista(null); // Fecha o modal de edição ao buscar
 
     try {
       // ✅ Corrigido: Adicionar o parâmetro de busca para forçar o backend a incluir todos os status
@@ -63,6 +193,48 @@ const BuscaLogistas = () => {
     }
   };
 
+  // ⭐️ Iniciar a Edição
+  const startEdit = (logista) => {
+    setMessage(null);
+    setEditingLogista(logista);
+  };
+
+  // ⭐️ Cancelar a Edição
+  const cancelEdit = () => {
+    setEditingLogista(null);
+  };
+
+  // ⭐️ Submissão da Atualização (PUT)
+  const handleUpdateSubmit = async (updatedData) => {
+    setLoading(true);
+    setMessage(null);
+    const id = updatedData._id;
+
+    // Remove o ID do corpo da requisição e prepara o PUT
+    const { _id, ...dataToSend } = updatedData;
+
+    try {
+        // Rota de atualização (PUT)
+        await api.put(`/api/lojas/${id}`, dataToSend);
+
+        // Atualiza o estado da lista no frontend com os novos dados
+        setLogistas(oldList => oldList.map(item =>
+            item._id === id ? { ...item, ...dataToSend } : item
+        ));
+
+        setEditingLogista(null); // Fecha o modal
+        setMessage({ type: 'success', text: "Logista atualizado com sucesso!" });
+
+    } catch (error) {
+        console.error("Erro ao atualizar:", error);
+        const errorMessage = error.response?.data?.error || "Erro desconhecido.";
+        setMessage({ type: 'error', text: `Erro ao atualizar logista: ${errorMessage}` });
+    } finally {
+        setLoading(false);
+    }
+  };
+
+
   // ✅ NOVO: Substitui startDelete e lida com os dois tipos de ação
   const startAction = (id, type) => {
     setDeleteId(id);
@@ -80,7 +252,6 @@ const BuscaLogistas = () => {
     try {
       if (currentAction === 'delete') {
         // Lógica para EXCLUSÃO PERMANENTE (DELETE)
-        // ATENÇÃO: Estou assumindo que você tem um endpoint de DELETE no seu backend.
         await api.delete(`/api/lojas/${deleteId}`);
         setLogistas(oldList => oldList.filter(item => item._id !== deleteId));
         setMessage({ type: 'success', text: "Logista excluído permanentemente com sucesso!" });
@@ -200,7 +371,7 @@ const BuscaLogistas = () => {
   return (
     <>
       <div className={styles['search-section']}>
-        <h2 className={styles['search-header']}>Consultar / Desativar Lojistas</h2>
+        <h2 className={styles['search-header']}>Consultar / Gerenciar Lojistas</h2>
 
         {message && (
           <div className={`${styles.alertMessage} ${styles[message.type]}`}>
@@ -268,6 +439,8 @@ const BuscaLogistas = () => {
                         <p>{item.responsavel || '-'}</p>
                       </div>
                       <div className={styles['item-actions']}>
+
+                        {/* 1. Botão de Expandir/Detalhes */}
                         <button
                           className={`${styles['btn-detail']} ${isExpanded ? styles['btn-rotated'] : ''}`}
                           title={isExpanded ? "Esconder Detalhes" : "Ver Detalhes"}
@@ -279,6 +452,20 @@ const BuscaLogistas = () => {
                           <FiArrowRight size={20} />
                         </button>
 
+                        {/* 2. ⭐️ NOVO: Botão de Editar */}
+                        <button
+                            className={styles['btn-edit']}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                startEdit(item);
+                            }}
+                            title="Editar Lojista"
+                            disabled={loading}
+                          >
+                            <FiEdit size={18} />
+                        </button>
+
+                        {/* 3. Botão de Excluir/Desativar */}
                         <button
                           className={styles['btn-delete']}
                           onClick={(e) => {
@@ -322,13 +509,23 @@ const BuscaLogistas = () => {
       </div>
 
       {showConfirm && <ConfirmationModal />}
+
+      {/* ⭐️ Renderiza o Modal de Edição se houver um lojista selecionado */}
+      {editingLogista && (
+          <EditLogistaModal
+              logista={editingLogista}
+              onSave={handleUpdateSubmit}
+              onCancel={cancelEdit}
+              loading={loading}
+          />
+      )}
     </>
   );
 };
 
 
 // ============================================================================
-// COMPONENTE PRINCIPAL: CadastroLogista
+// COMPONENTE PRINCIPAL: CadastroLogista (inalterado)
 // ============================================================================
 export default function CadastroLogista() {
   const [loading, setLoading] = useState(false);

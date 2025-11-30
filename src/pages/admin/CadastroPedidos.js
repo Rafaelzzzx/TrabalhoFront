@@ -1,55 +1,56 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import styles from '../../styles/Loja.module.css';
 import api from '../../services/api';
 import {
-  FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox, FiPlus, FiTrash2, FiRefreshCw, FiChevronDown
+  FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox, FiPlus, FiTrash2, FiChevronDown
 } from 'react-icons/fi';
 
 // ============================================================================
-// COMPONENTE DROPDOWN CUSTOMIZADO (CORRIGIDO)
+// COMPONENTE DROPDOWN CUSTOMIZADO (COM useRef)
 // ============================================================================
 const CustomProductDropdown = ({ options, value, onChange, placeholder, className, required, index, disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-  // Encontra o objeto selecionado para mostrar o nome
-  const selectedOption = options.find(option => option._id === value);
+  const selectedOption = options.find(option => String(option._id).trim() === String(value).trim());
   const displayValue = selectedOption ? (selectedOption.name || selectedOption.nome) : placeholder;
 
-  // Fechar o dropdown se clicar fora
   useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (isOpen && event.target.closest(`.${styles.customDropdownContainer}`)?.id !== `dropdown-container-${index}`) {
+    const handleClickOutside = (event) => {
+      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [isOpen, index]);
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleSelect = (optionId) => {
     onChange({ target: { name: 'produtoId', value: optionId } });
     setIsOpen(false);
   };
 
-  const handleClick = () => {
-    // CORREÇÃO: Só impede de abrir se estiver explicitamente "disabled" (sem fornecedor selecionado)
-    // Antes estava verificando options.length, o que impedia de ver a mensagem "Nenhum produto"
+  const handleClick = (e) => {
+    e.stopPropagation();
+
     if (!disabled) {
-        setIsOpen(!isOpen);
+        setIsOpen(prev => !prev);
     }
   };
 
   return (
     <div
+      ref={dropdownRef}
       className={`${styles.customDropdownContainer} ${className}`}
-      id={`dropdown-container-${index}`}
     >
       <div
-        className={`${styles.dropdownInput} ${isOpen ? styles.active : ''} ${styles.inputLong}`}
+        className={`${styles.dropdownInput} ${isOpen ? styles.active : ''}`}
         onClick={handleClick}
         tabIndex="0"
-        // Adiciona feedback visual se estiver desabilitado
         style={{
             cursor: disabled ? 'not-allowed' : 'pointer',
             opacity: disabled ? 0.6 : 1,
@@ -62,13 +63,13 @@ const CustomProductDropdown = ({ options, value, onChange, placeholder, classNam
 
       {/* Menu com as opções */}
       {isOpen && !disabled && (
-        <div className={styles.dropdownMenu}>
+        <div className={styles.dropdownMenu} style={{ zIndex: 1000 }}>
             {/* Caso 1: Existem produtos */}
             {options.length > 0 ? (
                 options.map(option => (
                     <div
                     key={option._id}
-                    className={`${styles.dropdownItem} ${option._id === value ? styles.selected : ''}`}
+                    className={`${styles.dropdownItem} ${String(option._id).trim() === String(value).trim() ? styles.selected : ''}`}
                     onClick={() => handleSelect(option._id)}
                     >
                     {option.name || option.nome}
@@ -104,8 +105,8 @@ const CadastroPedido = () => {
 
   // Estados para dados da API
   const [fornecedores, setFornecedores] = useState([]);
-  const [produtos, setProdutos] = useState([]);         // Todos os produtos
-  const [filteredProdutos, setFilteredProdutos] = useState([]); // Apenas do fornecedor selecionado
+  const [produtos, setProdutos] = useState([]);
+  const [filteredProdutos, setFilteredProdutos] = useState([]);
 
   // Estados do Formulário
   const [formData, setFormData] = useState({
@@ -119,17 +120,28 @@ const CadastroPedido = () => {
     { produtoId: '', quantidade: 1, valorUnitario: 0.00 }
   ]);
 
-  // --- 1. Carregar Dados Iniciais ---
+  // --- 1. Carregar Dados Iniciais - CORRIGIDO O TRIM! ---
   const loadInitialData = async () => {
     setLoadingData(true);
     setMessage(null);
     try {
       const respFornecedores = await api.get('/api/fornecedores');
-      setFornecedores(respFornecedores.data);
+
+      const normalizedFornecedores = respFornecedores.data.map(f => ({
+          ...f,
+          _id: String(f._id).trim()
+      }));
+      setFornecedores(normalizedFornecedores);
 
       const respProdutos = await api.get('/api/produtos');
-      setProdutos(respProdutos.data);
-      console.log('✅ Dados Iniciais Carregados. Total Produtos:', respProdutos.data.length);
+
+      const normalizedProdutos = respProdutos.data.map(p => ({
+          ...p,
+          supplier_id: String(p.supplier_id).trim(),
+          _id: String(p._id).trim()
+      }));
+
+      setProdutos(normalizedProdutos);
 
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -149,12 +161,10 @@ const CadastroPedido = () => {
     const selectedSupplierId = formData.fornecedorId;
 
     if (selectedSupplierId) {
-      // Filtra comparando Strings para evitar erros de tipo
       const produtosDoFornecedor = produtos.filter(p => {
-          return String(p.supplier_id) === String(selectedSupplierId);
+          return p.supplier_id === selectedSupplierId;
       });
 
-      console.log(`Filtro aplicado. Fornecedor: ${selectedSupplierId}. Produtos encontrados: ${produtosDoFornecedor.length}`);
       setFilteredProdutos(produtosDoFornecedor);
 
       // Limpa itens que não pertencem mais ao novo fornecedor
@@ -179,7 +189,8 @@ const CadastroPedido = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const cleanedValue = name === 'fornecedorId' ? String(value).trim() : value;
+    setFormData({ ...formData, [name]: cleanedValue });
   };
 
   const handleItemChange = useCallback((index, e, productsList) => {
@@ -192,12 +203,11 @@ const CadastroPedido = () => {
         } else if (name === 'quantidade') {
             novosItens[index][name] = parseInt(value) || 1;
         } else {
-            novosItens[index][name] = value;
+            const cleanedValue = name === 'produtoId' ? String(value).trim() : value;
+            novosItens[index][name] = cleanedValue;
 
-            // Ao selecionar produto, puxa o preço automaticamente
-            if (name === 'produtoId' && value) {
-                const produtoSelecionado = productsList.find(p => p._id === value);
-                // Tenta pegar 'price' (conforme seu Schema) ou 'valor' como fallback
+            if (name === 'produtoId' && cleanedValue) {
+                const produtoSelecionado = productsList.find(p => p._id === cleanedValue);
                 novosItens[index].valorUnitario = produtoSelecionado?.price || produtoSelecionado?.valor || 0.00;
             }
         }
@@ -240,7 +250,6 @@ const CadastroPedido = () => {
         return;
     }
 
-    // Filtra itens vazios
     const itensValidos = itensPedido.filter(item => item.produtoId && item.quantidade > 0);
 
     if (itensValidos.length === 0) {
@@ -273,7 +282,7 @@ const CadastroPedido = () => {
         status: 'Pendente',
         observacoes: ''
       });
-      // filteredProdutos será limpo pelo useEffect quando o fornecedorId ficar vazio
+      setItensPedido([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
 
     } catch (error) {
       console.error("Erro ao cadastrar Pedido:", error);
@@ -295,12 +304,11 @@ const CadastroPedido = () => {
     );
   }
 
-  // Define se o dropdown de produtos deve estar travado
   const isProductSelectionDisabled = !formData.fornecedorId;
 
   return (
     <div className={styles['dashboard-container']}>
-      {/* SIDEBAR */}
+      {/* SIDEBAR (Sem alterações) */}
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
@@ -376,55 +384,67 @@ const CadastroPedido = () => {
               </p>
           )}
 
+          {/* === CABEÇALHO DA TABELA DE ITENS CORRIGIDO === */}
+          <div className={styles.itemHeader}>
+              <div className={`${styles.headerColumn} ${styles.colProduct}`}>Produto</div>
+              <div className={`${styles.headerColumn} ${styles.colTiny} ${styles.alignRight}`}>Qtd.</div>
+              <div className={`${styles.headerColumn} ${styles.colTiny} ${styles.alignRight}`}>Valor Unit. (R$)</div>
+              <div className={`${styles.headerColumn} ${styles.itemTotalDisplay}`}>Total Item</div>
+              {/* Placeholder para o botão de lixeira, para alinhamento horizontal */}
+              <div className={styles.removeItemButton} style={{ visibility: 'hidden' }}></div>
+          </div>
+          {/* ======================================= */}
+
+
           {itensPedido.map((item, index) => (
             <div key={index} className={styles.itemRow}>
-                <div className={styles.fieldGroupItem}>
-                    <label>Produto <span className={styles.requiredAsterisk}>*</span></label>
+                {/* 1. CAMPO PRODUTO (Custom Dropdown) */}
+                <div className={`${styles.fieldGroupItem} ${styles.colProduct}`}>
                     <CustomProductDropdown
                         options={filteredProdutos}
                         value={item.produtoId}
                         onChange={(e) => handleItemChange(index, e, filteredProdutos)}
                         placeholder={isProductSelectionDisabled ? "Selecione o Fornecedor" : "Selecione um produto"}
-                        className={styles.inputLong}
                         required={true}
                         index={index}
                         disabled={isProductSelectionDisabled}
                     />
                 </div>
 
-                <div className={styles.fieldGroupItem}>
-                    <label>Qtd.</label>
+                {/* 2. CAMPO QTD */}
+                <div className={`${styles.fieldGroupItem} ${styles.colTiny}`}>
                     <input
                         type="number"
                         name="quantidade"
                         value={item.quantidade}
                         onChange={(e) => handleItemChange(index, e, filteredProdutos)}
                         min="1"
-                        className={styles.inputTiny}
+                        className={styles.inputTiny} /* A classe inputTiny define a largura 100% do container */
                         required
                         disabled={isProductSelectionDisabled}
                     />
                 </div>
 
-                <div className={styles.fieldGroupItem}>
-                    <label>Valor Unit. (R$)</label>
+                {/* 3. CAMPO VALOR UNIT. */}
+                <div className={`${styles.fieldGroupItem} ${styles.colTiny}`}>
                     <input
                         type="number"
                         name="valorUnitario"
-                        value={item.valorUnitario}
+                        value={item.valorUnitario.toFixed(2)}
                         onChange={(e) => handleItemChange(index, e, filteredProdutos)}
                         step="0.01"
                         min="0"
-                        className={styles.inputTiny}
+                        className={styles.inputTiny} /* A classe inputTiny define a largura 100% do container */
                         disabled={isProductSelectionDisabled}
                     />
                 </div>
 
+                {/* 4. CAMPO TOTAL ITEM */}
                 <div className={styles.fieldGroupItemTotal}>
-                    <label>Total</label>
                     <p className={styles.totalItem}>R$ {(item.quantidade * item.valorUnitario).toFixed(2).replace('.', ',')}</p>
                 </div>
 
+                {/* 5. BOTÃO REMOVER */}
                 <button
                     type="button"
                     className={styles.removeItemButton}

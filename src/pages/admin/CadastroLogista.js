@@ -25,6 +25,9 @@ const BuscaLogistas = () => {
   const [expandedId, setExpandedId] = useState(null);
   const [message, setMessage] = useState(null);
 
+  // NOVO ESTADO: Ação Atual ('deactivate' ou 'delete')
+  const [currentAction, setCurrentAction] = useState('deactivate');
+
   // Paginação
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 5;
@@ -35,66 +38,81 @@ const BuscaLogistas = () => {
     setExpandedId(currentId => (currentId === id ? null : id));
   };
 
-const handleSearch = async () => {
-  setLoading(true);
-  setSearched(true);
-  setMessage(null);
-  setCurrentIndex(0);
-  setExpandedId(null);
+  const handleSearch = async () => {
+    setLoading(true);
+    setSearched(true);
+    setMessage(null);
+    setCurrentIndex(0);
+    setExpandedId(null);
 
-  try {
-    // ⭐️ AJUSTE AQUI: Adicionar o parâmetro de busca para forçar o backend a incluir todos os status
-    const response = await api.get('/api/lojas?status=all'); // Exemplo: pede todos os status
-    let dados = response.data;
+    try {
+      // ✅ Corrigido: Adicionar o parâmetro de busca para forçar o backend a incluir todos os status
+      const response = await api.get('/api/lojas?status=all');
+      let dados = response.data;
 
-    // ... (O restante do seu filtro de texto permanece o mesmo e está correto)
-    if (searchId) dados = dados.filter(l => l._id.includes(searchId));
-    if (searchName) dados = dados.filter(l => l.store_name?.toLowerCase().includes(searchName.toLowerCase()));
-    if (searchEmail) dados = dados.filter(l => l.contact_email?.toLowerCase().includes(searchEmail.toLowerCase()));
+      if (searchId) dados = dados.filter(l => l._id.includes(searchId));
+      if (searchName) dados = dados.filter(l => l.store_name?.toLowerCase().includes(searchName.toLowerCase()));
+      if (searchEmail) dados = dados.filter(l => l.contact_email?.toLowerCase().includes(searchEmail.toLowerCase()));
 
-    setLogistas(dados);
-  } catch (error) {
-    console.error("Erro ao buscar:", error);
-    setMessage({ type: 'error', text: "Erro ao buscar logistas." });
-  } finally {
-    setLoading(false);
-  }
-};
+      setLogistas(dados);
+    } catch (error) {
+      console.error("Erro ao buscar:", error);
+      setMessage({ type: 'error', text: "Erro ao buscar logistas." });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const startDelete = (id) => {
+  // ✅ NOVO: Substitui startDelete e lida com os dois tipos de ação
+  const startAction = (id, type) => {
     setDeleteId(id);
+    setCurrentAction(type); // Define a ação que será executada
     setShowConfirm(true);
   };
 
-  const confirmDelete = async () => {
+  // ✅ NOVO: Função refatorada para lidar com desativação (PUT) ou exclusão definitiva (DELETE)
+  const handleConfirmAction = async () => {
     if (!deleteId) return;
     setShowConfirm(false);
     setLoading(true);
     setMessage(null);
 
     try {
-      await api.put(`/api/lojas/${deleteId}`, { status: 'off' });
+      if (currentAction === 'delete') {
+        // Lógica para EXCLUSÃO PERMANENTE (DELETE)
+        // ATENÇÃO: Estou assumindo que você tem um endpoint de DELETE no seu backend.
+        await api.delete(`/api/lojas/${deleteId}`);
+        setLogistas(oldList => oldList.filter(item => item._id !== deleteId));
+        setMessage({ type: 'success', text: "Logista excluído permanentemente com sucesso!" });
 
-      setLogistas(oldList => oldList.map(item =>
-        item._id === deleteId ? { ...item, status: 'off' } : item
-      ));
+      } else {
+        // Lógica para DESATIVAÇÃO (PUT para status: 'off')
+        await api.put(`/api/lojas/${deleteId}`, { status: 'off' });
+
+        setLogistas(oldList => oldList.map(item =>
+          item._id === deleteId ? { ...item, status: 'off' } : item
+        ));
+        setMessage({ type: 'success', text: "Logista desativado com sucesso!" });
+      }
 
       if (expandedId === deleteId) setExpandedId(null);
 
-      setMessage({ type: 'success', text: "Logista desativado com sucesso!" });
     } catch (error) {
-      console.error("Erro ao desativar:", error);
+      console.error(`Erro ao ${currentAction}:`, error);
+      const actionName = currentAction === 'delete' ? 'excluir' : 'desativar';
       const errorMessage = error.response?.data?.error || "Erro de rede/servidor.";
-      setMessage({ type: 'error', text: `Erro ao desativar: ${errorMessage}` });
+      setMessage({ type: 'error', text: `Erro ao ${actionName}: ${errorMessage}` });
     } finally {
       setLoading(false);
       setDeleteId(null);
+      setCurrentAction('deactivate'); // Reseta a ação para o padrão
     }
   };
 
   const cancelDelete = () => {
     setDeleteId(null);
     setShowConfirm(false);
+    setCurrentAction('deactivate'); // Reseta a ação
   };
 
   const nextSlide = () => {
@@ -116,24 +134,34 @@ const handleSearch = async () => {
   const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
 
   // --- Modal de Confirmação (Limpo e usando classes) ---
-  const ConfirmationModal = () => (
-    <div className={styles.modalBackdrop}>
-      <div className={styles.modalContent}>
-        <h3 className={styles.modalTitle}>Confirmação de Desativação</h3>
-        <p className={styles.modalText}>
-          Tem certeza que quer desativar essa loja? O acesso será revogado.
-        </p>
-        <div className={styles.modalActions}>
-          <button className={`${styles.submitButton} ${styles.btnCancel}`} onClick={cancelDelete}>
-            Cancelar
-          </button>
-          <button className={`${styles.submitButton} ${styles.btnDanger}`} onClick={confirmDelete} disabled={loading}>
-            {loading ? 'Desativando...' : 'Confirmar Desativação'}
-          </button>
+  const ConfirmationModal = () => {
+    const isDelete = currentAction === 'delete';
+    const title = isDelete ? 'Confirmação de Exclusão' : 'Confirmação de Desativação';
+    const text = isDelete
+      ? 'Tem certeza que quer EXCLUIR PERMANENTEMENTE essa loja? Esta ação não pode ser desfeita.'
+      : 'Tem certeza que quer DESATIVAR essa loja? O acesso será revogado, mas a loja poderá ser reativada posteriormente.';
+
+    return (
+      <div className={styles.modalBackdrop}>
+        <div className={styles.modalContent}>
+          <h3 className={styles.modalTitle}>{title}</h3>
+          <p className={styles.modalText}>{text}</p>
+          <div className={styles.modalActions}>
+            <button className={`${styles.submitButton} ${styles.btnCancel}`} onClick={cancelDelete}>
+              Cancelar
+            </button>
+            <button
+              className={`${styles.submitButton} ${styles.btnDanger}`}
+              onClick={handleConfirmAction} // Chamando a função refatorada
+              disabled={loading}
+            >
+              {loading ? 'Processando...' : `Confirmar ${isDelete ? 'Exclusão' : 'Desativação'}`}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // --- Detalhes Expandidos (Limpo) ---
   const ExpandedDetailsRow = ({ item }) => (
@@ -177,7 +205,7 @@ const handleSearch = async () => {
         {message && (
           <div className={`${styles.alertMessage} ${styles[message.type]}`}>
             {message.text.split('\n').map((line, index) => (
-                <p key={index} className={styles.messageLine}>{line}</p>
+              <p key={index} className={styles.messageLine}>{line}</p>
             ))}
           </div>
         )}
@@ -222,60 +250,68 @@ const handleSearch = async () => {
                 if (isDeactivated) itemClasses += ` ${styles['item-status-off']}`;
 
                 return (
-                    <React.Fragment key={item._id}>
-                      <div
-                          className={itemClasses}
-                          onClick={() => handleToggleExpand(item._id)}
-                      >
-                        <div className={styles['detail-cell-name']}>
-                            <p>{item.store_name}</p>
-                        </div>
-                        <div className={styles['detail-cell']}>
-                            <p>{item._id.substring(0, 10) + '...'}</p>
-                        </div>
-                        <div className={styles['detail-cell']}>
-                            <p>{item.contact_email}</p>
-                        </div>
-                        <div className={styles['detail-cell']}>
-                            <p>{item.responsavel || '-'}</p>
-                        </div>
-                        <div className={styles['item-actions']}>
-                          <button
-                              className={`${styles['btn-detail']} ${isExpanded ? styles['btn-rotated'] : ''}`}
-                              title={isExpanded ? "Esconder Detalhes" : "Ver Detalhes"}
-                              onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleToggleExpand(item._id);
-                              }}
-                          >
-                              <FiArrowRight size={20} />
-                          </button>
-
-                          <button
-                            className={styles['btn-delete']}
-                            onClick={(e) => { e.stopPropagation(); startDelete(item._id); }}
-                            title="Desativar Loja"
-                            disabled={loading || isDeactivated}
-                          >
-                            <FiTrash2 size={18} />
-                          </button>
-                        </div>
+                  <React.Fragment key={item._id}>
+                    <div
+                      className={itemClasses}
+                      onClick={() => handleToggleExpand(item._id)}
+                    >
+                      <div className={styles['detail-cell-name']}>
+                        <p>{item.store_name}</p>
                       </div>
+                      <div className={styles['detail-cell']}>
+                        <p>{item._id.substring(0, 10) + '...'}</p>
+                      </div>
+                      <div className={styles['detail-cell']}>
+                        <p>{item.contact_email}</p>
+                      </div>
+                      <div className={styles['detail-cell']}>
+                        <p>{item.responsavel || '-'}</p>
+                      </div>
+                      <div className={styles['item-actions']}>
+                        <button
+                          className={`${styles['btn-detail']} ${isExpanded ? styles['btn-rotated'] : ''}`}
+                          title={isExpanded ? "Esconder Detalhes" : "Ver Detalhes"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleExpand(item._id);
+                          }}
+                        >
+                          <FiArrowRight size={20} />
+                        </button>
 
-                      {isExpanded && <ExpandedDetailsRow item={item} />}
-                    </React.Fragment>
+                        <button
+                          className={styles['btn-delete']}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // ✅ CORRIGIDO: Agora chama a função startAction
+                            if (isDeactivated) {
+                              startAction(item._id, 'delete'); // Exclusão definitiva
+                            } else {
+                              startAction(item._id, 'deactivate'); // Desativação
+                            }
+                          }}
+                          title={isDeactivated ? "Excluir Permanentemente" : "Desativar Lojista"}
+                          disabled={loading}
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {isExpanded && <ExpandedDetailsRow item={item} />}
+                  </React.Fragment>
                 );
               })}
             </div>
 
             <div className={styles.paginationControls}>
-                <button className={styles['nav-btn']} onClick={prevSlide} disabled={currentIndex === 0 || loading}>
-                    <FiChevronLeft size={24} />
-                </button>
-                <span className={styles.pageInfo}>Página {currentPage} de {totalPages}</span>
-                <button className={styles['nav-btn']} onClick={nextSlide} disabled={currentIndex + itemsPerPage >= logistas.length || loading}>
-                    <FiChevronRight size={24} />
-                </button>
+              <button className={styles['nav-btn']} onClick={prevSlide} disabled={currentIndex === 0 || loading}>
+                <FiChevronLeft size={24} />
+              </button>
+              <span className={styles.pageInfo}>Página {currentPage} de {totalPages}</span>
+              <button className={styles['nav-btn']} onClick={nextSlide} disabled={currentIndex + itemsPerPage >= logistas.length || loading}>
+                <FiChevronRight size={24} />
+              </button>
             </div>
           </>
         )}
@@ -295,159 +331,159 @@ const handleSearch = async () => {
 // COMPONENTE PRINCIPAL: CadastroLogista
 // ============================================================================
 export default function CadastroLogista() {
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null); // Adicionado estado de mensagem unificado
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null); // Adicionado estado de mensagem unificado
 
-    const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
+    nomeLoja: '', cnpj: '', responsavel: '', email: '',
+    rua: '', cidade: '', estado: '', telefone: '',
+    gerarAutomaticamente: false, senhaManual: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    const dadosFinaisParaBackend = {
+      store_name: formData.nomeLoja,
+      cnpj: formData.cnpj,
+      contact_email: formData.email,
+      address: formData.rua,
+      phone_number: formData.telefone,
+      cidade: formData.cidade, // Garantindo que cidade vá se existir no backend
+      estado: formData.estado, // Garantindo que estado vá se existir no backend
+      pwd: formData.gerarAutomaticamente ? null : formData.senhaManual,
+      responsavel: formData.responsavel
+    };
+
+    try {
+      const response = await api.post('/api/lojas/cadastroLoja', dadosFinaisParaBackend);
+
+      const successText = `✅ Sucesso! Loja cadastrada.\n\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.senhaUsada}`;
+      setMessage({ type: 'success', text: successText });
+
+      setFormData({
         nomeLoja: '', cnpj: '', responsavel: '', email: '',
         rua: '', cidade: '', estado: '', telefone: '',
         gerarAutomaticamente: false, senhaManual: ''
-    });
+      });
+    } catch (error) {
+      console.error("Erro ao cadastrar Logista:", error);
+      const errorMessage = error.response?.data?.erro || (error.response?.data?.erros && error.response.data.erros.join('\n')) || "Erro interno.";
+      setMessage({ type: 'error', text: `❌ Erro: ${errorMessage}` });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
-    };
+  return (
+    <div className={styles['dashboard-container']}>
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage(null);
+      {/* --- SIDEBAR --- */}
+      <nav className={styles.sidebar}>
+        <ul>
+          <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
+          <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastrar Fornecedores</span></div></Link></li>
+          <li className={styles.active}><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Logistas</span></div></Link></li>
+          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
+          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
+          <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
+        </ul>
+      </nav>
 
-        const dadosFinaisParaBackend = {
-            store_name: formData.nomeLoja,
-            cnpj: formData.cnpj,
-            contact_email: formData.email,
-            address: formData.rua,
-            phone_number: formData.telefone,
-            cidade: formData.cidade, // Garantindo que cidade vá se existir no backend
-            estado: formData.estado, // Garantindo que estado vá se existir no backend
-            pwd: formData.gerarAutomaticamente ? null : formData.senhaManual,
-            responsavel: formData.responsavel
-        };
+      {/* --- CONTEÚDO PRINCIPAL --- */}
+      <main className={styles['main-content']}>
+        <header className={styles.header}>
+          <h1>Cadastrar Logista</h1>
+        </header>
 
-        try {
-            const response = await api.post('/api/lojas/cadastroLoja', dadosFinaisParaBackend);
+        {/* Mensagens de Feedback no Topo */}
+        {message && message.type !== 'info' && (
+          <div className={`${styles.alertMessage} ${styles[message.type]}`}>
+            {message.text.split('\n').map((line, index) => (
+              <p key={index} className={styles.messageLine}>{line}</p>
+            ))}
+          </div>
+        )}
 
-            const successText = `✅ Sucesso! Loja cadastrada.\n\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.senhaUsada}`;
-            setMessage({ type: 'success', text: successText });
+        <form className={styles.formCard} onSubmit={handleSubmit}>
+          <h2 className={styles.sectionTitle}>Dados do Logista</h2>
 
-            setFormData({
-                nomeLoja: '', cnpj: '', responsavel: '', email: '',
-                rua: '', cidade: '', estado: '', telefone: '',
-                gerarAutomaticamente: false, senhaManual: ''
-            });
-        } catch (error) {
-            console.error("Erro ao cadastrar Logista:", error);
-            const errorMessage = error.response?.data?.erro || (error.response?.data?.erros && error.response.data.erros.join('\n')) || "Erro interno.";
-            setMessage({ type: 'error', text: `❌ Erro: ${errorMessage}` });
-        } finally {
-            setLoading(false);
-        }
-    };
+          <div className={styles.fieldGroup}>
+            <label>Nome da Loja <span className={styles.requiredAsterisk}>*</span></label>
+            <input type="text" name="nomeLoja" className={styles.inputLong} value={formData.nomeLoja} onChange={handleChange} required />
+          </div>
 
-    return (
-        <div className={styles['dashboard-container']}>
+          <div className={styles.fieldGroup}>
+            <label>CNPJ <span className={styles.requiredAsterisk}>*</span></label>
+            <input type="text" name="cnpj" className={styles.inputLong} value={formData.cnpj} onChange={handleChange} placeholder="99.999.999/0001-88" required />
+          </div>
 
-            {/* --- SIDEBAR --- */}
-            <nav className={styles.sidebar}>
-                <ul>
-                    <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
-                    <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastrar Fornecedores</span></div></Link></li>
-                    <li className={styles.active}><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Logistas</span></div></Link></li>
-                    <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
-                    <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
-                    <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
-                </ul>
-            </nav>
+          <div className={styles.fieldGroup}>
+            <label>Responsável</label>
+            <input type="text" name="responsavel" className={styles.inputLong} value={formData.responsavel} onChange={handleChange} />
+          </div>
 
-            {/* --- CONTEÚDO PRINCIPAL --- */}
-            <main className={styles['main-content']}>
-                <header className={styles.header}>
-                    <h1>Cadastrar Logista</h1>
-                </header>
+          <div className={styles.fieldGroup}>
+            <label>Email Principal (Login) <span className={styles.requiredAsterisk}>*</span></label>
+            <input type="email" name="email" className={styles.inputLong} value={formData.email} onChange={handleChange} required />
+          </div>
 
-                {/* Mensagens de Feedback no Topo */}
-                {message && message.type !== 'info' && (
-                    <div className={`${styles.alertMessage} ${styles[message.type]}`}>
-                        {message.text.split('\n').map((line, index) => (
-                            <p key={index} className={styles.messageLine}>{line}</p>
-                        ))}
-                    </div>
-                )}
+          <h2 className={styles.sectionTitle}>Endereço</h2>
+          <div className={styles.row}>
+            <div className={styles.fieldGroup}>
+              <label>Rua</label>
+              <input type="text" name="rua" className={styles.inputMedium} value={formData.rua} onChange={handleChange} />
+            </div>
+            <div className={styles.fieldGroup}>
+              <label>Cidade</label>
+              <input type="text" name="cidade" className={styles.inputMedium} value={formData.cidade} onChange={handleChange} />
+            </div>
+            <div className={styles.fieldGroup}>
+              <label>Estado (UF)</label>
+              <input type="text" name="estado" className={styles.inputMedium} placeholder="Ex: SP" value={formData.estado} onChange={handleChange} />
+            </div>
+          </div>
 
-                <form className={styles.formCard} onSubmit={handleSubmit}>
-                    <h2 className={styles.sectionTitle}>Dados do Logista</h2>
+          <h2 className={styles.sectionTitle}>Contatos</h2>
+          <div className={styles.row}>
+            <div className={styles.fieldGroup}>
+              <label>Telefone</label>
+              <input type="text" name="telefone" className={styles.inputMedium} value={formData.telefone} onChange={handleChange} />
+            </div>
+          </div>
 
-                    <div className={styles.fieldGroup}>
-                        <label>Nome da Loja <span className={styles.requiredAsterisk}>*</span></label>
-                        <input type="text" name="nomeLoja" className={styles.inputLong} value={formData.nomeLoja} onChange={handleChange} required />
-                    </div>
+          {!formData.gerarAutomaticamente && (
+            <div className={styles.fieldGroup}>
+              <label>Senha (opcional)</label>
+              <input type="password" name="senhaManual" className={styles.inputMedium} value={formData.senhaManual} onChange={handleChange} placeholder="Deixe vazio para gerar automaticamente" />
+            </div>
+          )}
 
-                    <div className={styles.fieldGroup}>
-                        <label>CNPJ <span className={styles.requiredAsterisk}>*</span></label>
-                        <input type="text" name="cnpj" className={styles.inputLong} value={formData.cnpj} onChange={handleChange} placeholder="99.999.999/0001-88" required />
-                    </div>
+          <div className={styles.footer}>
+            <label className={styles.checkboxContainer}>
+              <input type="checkbox" name="gerarAutomaticamente" checked={formData.gerarAutomaticamente} onChange={handleChange} />
+              <span className={styles.checkmark}></span>
+              Gerar senha automaticamente
+            </label>
 
-                    <div className={styles.fieldGroup}>
-                        <label>Responsável</label>
-                        <input type="text" name="responsavel" className={styles.inputLong} value={formData.responsavel} onChange={handleChange} />
-                    </div>
+            <button type="submit" className={styles.submitButton} disabled={loading}>
+              {loading ? 'Cadastrando...' : 'Criar Lojista'}
+            </button>
+          </div>
+        </form>
 
-                    <div className={styles.fieldGroup}>
-                        <label>Email Principal (Login) <span className={styles.requiredAsterisk}>*</span></label>
-                        <input type="email" name="email" className={styles.inputLong} value={formData.email} onChange={handleChange} required />
-                    </div>
+        {/* Divisória e Componente de Busca */}
+        <hr className={styles.divider} />
+        <BuscaLogistas />
 
-                    <h2 className={styles.sectionTitle}>Endereço</h2>
-                    <div className={styles.row}>
-                        <div className={styles.fieldGroup}>
-                            <label>Rua</label>
-                            <input type="text" name="rua" className={styles.inputMedium} value={formData.rua} onChange={handleChange} />
-                        </div>
-                        <div className={styles.fieldGroup}>
-                            <label>Cidade</label>
-                            <input type="text" name="cidade" className={styles.inputMedium} value={formData.cidade} onChange={handleChange} />
-                        </div>
-                        <div className={styles.fieldGroup}>
-                            <label>Estado (UF)</label>
-                            <input type="text" name="estado" className={styles.inputMedium} placeholder="Ex: SP" value={formData.estado} onChange={handleChange} />
-                        </div>
-                    </div>
-
-                    <h2 className={styles.sectionTitle}>Contatos</h2>
-                    <div className={styles.row}>
-                        <div className={styles.fieldGroup}>
-                            <label>Telefone</label>
-                            <input type="text" name="telefone" className={styles.inputMedium} value={formData.telefone} onChange={handleChange} />
-                        </div>
-                    </div>
-
-                    {!formData.gerarAutomaticamente && (
-                        <div className={styles.fieldGroup}>
-                            <label>Senha (opcional)</label>
-                            <input type="password" name="senhaManual" className={styles.inputMedium} value={formData.senhaManual} onChange={handleChange} placeholder="Deixe vazio para gerar automaticamente" />
-                        </div>
-                    )}
-
-                    <div className={styles.footer}>
-                        <label className={styles.checkboxContainer}>
-                            <input type="checkbox" name="gerarAutomaticamente" checked={formData.gerarAutomaticamente} onChange={handleChange} />
-                            <span className={styles.checkmark}></span>
-                            Gerar senha automaticamente
-                        </label>
-
-                        <button type="submit" className={styles.submitButton} disabled={loading}>
-                            {loading ? 'Cadastrando...' : 'Criar Lojista'}
-                        </button>
-                    </div>
-                </form>
-
-                {/* Divisória e Componente de Busca */}
-                <hr className={styles.divider} />
-                <BuscaLogistas />
-
-            </main>
-        </div>
-    );
+      </main>
+    </div>
+  );
 }

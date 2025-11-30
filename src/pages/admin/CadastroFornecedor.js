@@ -23,6 +23,7 @@ const BuscaFornecedores = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [message, setMessage] = useState(null);
+  const [currentAction, setCurrentAction] = useState('deactivate'); // Ação que será executada
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 5;
@@ -39,6 +40,7 @@ const BuscaFornecedores = () => {
     setExpandedId(null);
 
     try {
+      // ✅ ENDPOINT AJUSTADO: Se o fornecedor estiver em 'cadastroFornecedor', a busca deve ser lá.
       const response = await api.get('/api/fornecedores/cadastroFornecedor');
       let dados = response.data;
 
@@ -55,40 +57,60 @@ const BuscaFornecedores = () => {
     }
   };
 
-  const startDelete = (id) => {
+  // ⭐️ NOVO: Função para iniciar a ação (Deactivate ou Delete)
+  const startAction = (id, action) => {
     setDeleteId(id);
+    setCurrentAction(action);
     setShowConfirm(true);
   };
 
-  const confirmDelete = async () => {
+  const cancelAction = () => {
+    setDeleteId(null);
+    setShowConfirm(false);
+    setCurrentAction('deactivate'); // Reset
+  };
+
+  // ⭐️ REFATORADO: Lida tanto com Desativação (PUT) quanto com Exclusão (DELETE)
+  const handleConfirmAction = async () => {
     if (!deleteId) return;
     setShowConfirm(false);
     setLoading(true);
     setMessage(null);
 
     try {
-      await api.put(`/api/fornecedores/cadastroFornecedor/${deleteId}`, { status: 'off' });
+      if (currentAction === 'deactivate') {
+        // --- DESATIVAÇÃO (SOFT DELETE) ---
+        await api.put(`/api/fornecedores/cadastroFornecedor/${deleteId}`, { status: 'off' });
 
-      setFornecedores(oldList => oldList.map(item =>
-        item._id === deleteId ? { ...item, status: 'off' } : item
-      ));
+        setFornecedores(oldList => oldList.map(item =>
+          item._id === deleteId ? { ...item, status: 'off' } : item
+        ));
+
+        setMessage({ type: 'success', text: "Fornecedor desativado com sucesso!" });
+
+      } else if (currentAction === 'delete') {
+        // --- EXCLUSÃO PERMANENTE (HARD DELETE) ---
+        // Aqui o backend deve deletar o Fornecedor E o Usuário associado!
+        await api.delete(`/api/fornecedores/cadastroFornecedor/${deleteId}`);
+
+        // Filtra a lista para remover o item do frontend
+        setFornecedores(oldList => oldList.filter(item => item._id !== deleteId));
+
+        setMessage({ type: 'success', text: "Fornecedor e usuário associado deletados permanentemente!" });
+
+      }
 
       if (expandedId === deleteId) setExpandedId(null);
 
-      setMessage({ type: 'success', text: "Fornecedor desativado com sucesso!" });
     } catch (error) {
-      console.error("Erro ao desativar:", error);
+      console.error(`Erro ao ${currentAction}:`, error);
       const errorMessage = error.response?.data?.error || "Erro desconhecido.";
-      setMessage({ type: 'error', text: `Erro ao desativar: ${errorMessage}` });
+      setMessage({ type: 'error', text: `Erro ao ${currentAction}: ${errorMessage}` });
     } finally {
       setLoading(false);
       setDeleteId(null);
+      setCurrentAction('deactivate'); // Reset
     }
-  };
-
-  const cancelDelete = () => {
-    setDeleteId(null);
-    setShowConfirm(false);
   };
 
   const nextSlide = () => {
@@ -109,35 +131,42 @@ const BuscaFornecedores = () => {
   const totalPages = Math.ceil(fornecedores.length / itemsPerPage);
   const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
 
-  // --- Modal de Confirmação (Limpo) ---
-  const ConfirmationModal = () => (
-    <div className={styles.modalBackdrop}>
-      <div className={styles.modalContent}>
-        <h3 className={styles.modalTitle}>Confirmação de Desativação</h3>
-        <p className={styles.modalText}>
-          Tem certeza que quer desativar esse fornecedor?
-        </p>
+  // --- Modal de Confirmação ---
+  const ConfirmationModal = () => {
+    const isDeleting = currentAction === 'delete';
 
-        <div className={styles.modalActions}>
-          <button
-            className={`${styles.submitButton} ${styles.btnCancel}`}
-            onClick={cancelDelete}
-          >
-            Cancelar
-          </button>
-          <button
-            className={`${styles.submitButton} ${styles.btnDanger}`}
-            onClick={confirmDelete}
-            disabled={loading}
-          >
-            {loading ? 'Desativando...' : 'Confirmar Desativação'}
-          </button>
+    return (
+      <div className={styles.modalBackdrop}>
+        <div className={styles.modalContent}>
+          <h3 className={styles.modalTitle}>
+            Confirmação de {isDeleting ? 'Exclusão Permanente' : 'Desativação'}
+          </h3>
+          <p className={styles.modalText}>
+            Tem certeza que quer {isDeleting ? 'EXCLUIR PERMANENTEMENTE este fornecedor e seu usuário associado?' : 'DESATIVAR este fornecedor?'}
+          </p>
+
+          <div className={styles.modalActions}>
+            <button
+              className={`${styles.submitButton} ${styles.btnCancel}`}
+              onClick={cancelAction} // Atualizado para cancelAction
+            >
+              Cancelar
+            </button>
+            <button
+
+              className={`${styles.submitButton} ${styles.btnDanger}`}
+              onClick={handleConfirmAction} // Atualizado para handleConfirmAction
+              disabled={loading}
+            >
+              {loading ? 'Processando...' : `Confirmar ${isDeleting ? 'Exclusão' : 'Desativação'}`}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  // --- Linha Expandida (Limpo) ---
+  // --- Linha Expandida (sem alterações) ---
   const ExpandedDetailsRow = ({ fornecedor }) => (
     <div className={styles['expanded-details-row']}>
       <div className={styles['detail-full-span']}>
@@ -174,7 +203,7 @@ const BuscaFornecedores = () => {
   return (
     <>
       <div className={styles['search-section']}>
-        <h2 className={styles['search-header']}>Consultar / Desativar Fornecedor</h2>
+        <h2 className={styles['search-header']}>Consultar / Gerenciar Fornecedor</h2>
 
         {message && (
           <div className={`${styles.alertMessage} ${styles[message.type]}`}>
@@ -218,7 +247,6 @@ const BuscaFornecedores = () => {
                 const isExpanded = expandedId === fornecedor._id;
                 const isDeactivated = fornecedor.status === 'off';
 
-                // Construção dinâmica de classes (sem estilo inline)
                 let itemClasses = styles['provider-list-item'];
                 if (isExpanded) itemClasses += ` ${styles['item-expanded']}`;
                 if (isDeactivated) itemClasses += ` ${styles['item-status-off']}`;
@@ -255,9 +283,17 @@ const BuscaFornecedores = () => {
 
                           <button
                             className={styles['btn-delete']}
-                            onClick={(e) => { e.stopPropagation(); startDelete(fornecedor._id); }}
-                            title={isDeactivated ? "Já desativado" : "Desativar"}
-                            disabled={loading || isDeactivated}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                // ⭐️ CORREÇÃO DO startAction: Agora está definida
+                                if (isDeactivated) {
+                                  startAction(fornecedor._id, 'delete'); // Exclusão definitiva (Hard Delete)
+                                } else {
+                                  startAction(fornecedor._id, 'deactivate'); // Desativação (Soft Delete)
+                                }
+                            }}
+                            title={isDeactivated ? "Excluir Permanentemente" : "Desativar Fornecedor"}
+                            disabled={loading}
                           >
                             <FiTrash2 size={18} />
                           </button>

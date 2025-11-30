@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import withAuth from '../../components/withAuth';
 import { FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox } from 'react-icons/fi';
 import { FaShieldAlt } from 'react-icons/fa';
 import api from '../../services/api'; // Sua conexão com o backend
@@ -48,7 +49,7 @@ const TabelaUltimos = ({ title, dados, tipo }) => (
     </div>
 );
 
-export default function Dashboard() {
+function Dashboard() {
     // Estados para armazenar os dados REAIS da API
     const [stats, setStats] = useState({
         totalLojas: 0,
@@ -206,3 +207,5 @@ export default function Dashboard() {
         </div>
     );
 }
+
+export default withAuth(Dashboard);

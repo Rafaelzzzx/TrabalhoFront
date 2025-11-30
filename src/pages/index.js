@@ -64,7 +64,7 @@ export default function Login() {
             className={styles.greenButton}
             onClick={() => handleLogin("logista")}
           >
-            Logar como<br />Logista
+            Logar como<br />Lojista
           </button>
 
           <button

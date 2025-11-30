@@ -13,7 +13,7 @@ import {
 const BuscaFornecedores = () => {
   const [searchId, setSearchId] = useState('');
   const [searchName, setSearchName] = useState('');
-  const [searchEmail, setSearchEmail] = useState('');
+  const [searchEmail, setSearchIdEmail] = useState('');
 
   const [fornecedores, setFornecedores] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,8 +40,8 @@ const BuscaFornecedores = () => {
     setExpandedId(null);
 
     try {
-      // ✅ ENDPOINT AJUSTADO: Se o fornecedor estiver em 'cadastroFornecedor', a busca deve ser lá.
-      const response = await api.get('/api/fornecedores/cadastroFornecedor');
+      // ⭐️ CORREÇÃO APLICADA AQUI: USANDO A ROTA RAIZ PARA LISTAGEM
+      const response = await api.get('/api/fornecedores');
       let dados = response.data;
 
       if (searchId) dados = dados.filter(f => f._id.includes(searchId));
@@ -51,13 +51,14 @@ const BuscaFornecedores = () => {
       setFornecedores(dados);
     } catch (error) {
       console.error("Erro ao buscar:", error);
-      setMessage({ type: 'error', text: "Erro ao buscar fornecedores." });
+      const errorMsg = error.response ? `Status: ${error.response.status} - ${error.response.data.error || error.message}` : 'Erro de conexão/rede.';
+      setMessage({ type: 'error', text: `Erro ao buscar fornecedores. Detalhe: ${errorMsg}` });
     } finally {
       setLoading(false);
     }
   };
 
-  // ⭐️ NOVO: Função para iniciar a ação (Deactivate ou Delete)
+  // ⭐️ Função para iniciar a ação (Deactivate ou Delete)
   const startAction = (id, action) => {
     setDeleteId(id);
     setCurrentAction(action);
@@ -70,7 +71,7 @@ const BuscaFornecedores = () => {
     setCurrentAction('deactivate'); // Reset
   };
 
-  // ⭐️ REFATORADO: Lida tanto com Desativação (PUT) quanto com Exclusão (DELETE)
+  // ⭐️ Lida tanto com Desativação (PUT) quanto com Exclusão (DELETE)
   const handleConfirmAction = async () => {
     if (!deleteId) return;
     setShowConfirm(false);
@@ -78,6 +79,7 @@ const BuscaFornecedores = () => {
     setMessage(null);
 
     try {
+      // Ações PUT e DELETE ainda usam o subcaminho para manter a compatibilidade
       if (currentAction === 'deactivate') {
         // --- DESATIVAÇÃO (SOFT DELETE) ---
         await api.put(`/api/fornecedores/cadastroFornecedor/${deleteId}`, { status: 'off' });
@@ -90,7 +92,6 @@ const BuscaFornecedores = () => {
 
       } else if (currentAction === 'delete') {
         // --- EXCLUSÃO PERMANENTE (HARD DELETE) ---
-        // Aqui o backend deve deletar o Fornecedor E o Usuário associado!
         await api.delete(`/api/fornecedores/cadastroFornecedor/${deleteId}`);
 
         // Filtra a lista para remover o item do frontend
@@ -148,14 +149,13 @@ const BuscaFornecedores = () => {
           <div className={styles.modalActions}>
             <button
               className={`${styles.submitButton} ${styles.btnCancel}`}
-              onClick={cancelAction} // Atualizado para cancelAction
+              onClick={cancelAction}
             >
               Cancelar
             </button>
             <button
-
               className={`${styles.submitButton} ${styles.btnDanger}`}
-              onClick={handleConfirmAction} // Atualizado para handleConfirmAction
+              onClick={handleConfirmAction}
               disabled={loading}
             >
               {loading ? 'Processando...' : `Confirmar ${isDeleting ? 'Exclusão' : 'Desativação'}`}
@@ -224,7 +224,7 @@ const BuscaFornecedores = () => {
           </div>
           <div className={styles['search-group']}>
             <label>Email</label>
-            <input type="text" placeholder="Ex: contato@..." value={searchEmail} onChange={e => setSearchEmail(e.target.value)} />
+            <input type="text" placeholder="Ex: contato@..." value={searchEmail} onChange={e => setSearchIdEmail(e.target.value)} />
           </div>
           <button className={styles['btn-search']} onClick={handleSearch} disabled={loading}>
             <FiSearch size={20} />
@@ -285,7 +285,6 @@ const BuscaFornecedores = () => {
                             className={styles['btn-delete']}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                // ⭐️ CORREÇÃO DO startAction: Agora está definida
                                 if (isDeactivated) {
                                   startAction(fornecedor._id, 'delete'); // Exclusão definitiva (Hard Delete)
                                 } else {
@@ -355,7 +354,8 @@ export default function CadastroFornecedor() {
     };
 
     try {
-      const response = await api.post('/api/fornecedores/cadastroFornecedor', dadosParaBackend);
+      // POST já está correto na rota raiz
+      const response = await api.post('/api/fornecedores', dadosParaBackend);
       const successText = `✅ Sucesso!\n\nFornecedor: ${response.data.fornecedor.supplier_name}\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.usuarioGerado.pwd}`;
       setMessage({ type: 'success', text: successText });
       setFormData({

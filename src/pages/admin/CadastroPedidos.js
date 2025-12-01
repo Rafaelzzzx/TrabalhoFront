@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import styles from '../../styles/Loja.module.css';
+import styles from '../../styles/Pedido.module.css'; // Importa o CSS ajustado
 import api from '../../services/api';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox, FiPlus, FiTrash2, FiChevronDown
 } from 'react-icons/fi';
 
 // ============================================================================
-// COMPONENTE DROPDOWN CUSTOMIZADO (COM useRef)
+// COMPONENTE DROPDOWN CUSTOMIZADO (Produtos)
 // ============================================================================
 const CustomProductDropdown = ({ options, value, onChange, placeholder, className, required, index, disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,8 +53,8 @@ const CustomProductDropdown = ({ options, value, onChange, placeholder, classNam
         tabIndex="0"
         style={{
             cursor: disabled ? 'not-allowed' : 'pointer',
-            opacity: disabled ? 0.6 : 1,
-            backgroundColor: disabled ? '#f0f0f0' : '#fff'
+            opacity: disabled ? 0.9 : 1,
+            backgroundColor: disabled ? '#f7f7f7' : '#fff'
         }}
       >
         <span>{displayValue}</span>
@@ -64,7 +64,6 @@ const CustomProductDropdown = ({ options, value, onChange, placeholder, classNam
       {/* Menu com as opções */}
       {isOpen && !disabled && (
         <div className={styles.dropdownMenu} style={{ zIndex: 1000 }}>
-            {/* Caso 1: Existem produtos */}
             {options.length > 0 ? (
                 options.map(option => (
                     <div
@@ -76,7 +75,6 @@ const CustomProductDropdown = ({ options, value, onChange, placeholder, classNam
                     </div>
                 ))
             ) : (
-                // Caso 2: Lista vazia (mensagem de feedback)
                 <div className={styles.dropdownItem} style={{ fontStyle: 'italic', cursor: 'default', color: '#999' }}>
                     Nenhum produto encontrado para este fornecedor.
                 </div>
@@ -120,13 +118,12 @@ const CadastroPedido = () => {
     { produtoId: '', quantidade: 1, valorUnitario: 0.00 }
   ]);
 
-  // --- 1. Carregar Dados Iniciais - CORRIGIDO O TRIM! ---
+  // --- 1. Carregar Dados Iniciais ---
   const loadInitialData = async () => {
     setLoadingData(true);
     setMessage(null);
     try {
       const respFornecedores = await api.get('/api/fornecedores');
-
       const normalizedFornecedores = respFornecedores.data.map(f => ({
           ...f,
           _id: String(f._id).trim()
@@ -134,7 +131,6 @@ const CadastroPedido = () => {
       setFornecedores(normalizedFornecedores);
 
       const respProdutos = await api.get('/api/produtos');
-
       const normalizedProdutos = respProdutos.data.map(p => ({
           ...p,
           supplier_id: String(p.supplier_id).trim(),
@@ -167,7 +163,6 @@ const CadastroPedido = () => {
 
       setFilteredProdutos(produtosDoFornecedor);
 
-      // Limpa itens que não pertencem mais ao novo fornecedor
       setItensPedido(currentItens => {
           return currentItens.map(item => {
               const produtoValido = produtosDoFornecedor.some(p => p._id === item.produtoId);
@@ -180,7 +175,9 @@ const CadastroPedido = () => {
 
     } else {
       setFilteredProdutos([]);
-      setItensPedido([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
+      if (itensPedido.length === 0 || itensPedido.length > 1 || itensPedido[0].produtoId !== '') {
+        setItensPedido([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
+      }
     }
   }, [formData.fornecedorId, produtos]);
 
@@ -199,7 +196,9 @@ const CadastroPedido = () => {
         const novosItens = [...prevItens];
 
         if (name === 'valorUnitario') {
-            novosItens[index][name] = parseFloat(value) || 0;
+            // Permite input de string (com vírgula), mas converte para float
+            const numericValue = parseFloat(value.replace(',', '.')) || 0;
+            novosItens[index][name] = numericValue;
         } else if (name === 'quantidade') {
             novosItens[index][name] = parseInt(value) || 1;
         } else {
@@ -208,7 +207,7 @@ const CadastroPedido = () => {
 
             if (name === 'produtoId' && cleanedValue) {
                 const produtoSelecionado = productsList.find(p => p._id === cleanedValue);
-                novosItens[index].valorUnitario = produtoSelecionado?.price || produtoSelecionado?.valor || 0.00;
+                novosItens[index].valorUnitario = produtoSelecionado?.price || 0.00;
             }
         }
         return novosItens;
@@ -234,7 +233,9 @@ const CadastroPedido = () => {
 
   const calcularTotal = () => {
     return itensPedido.reduce((total, item) => {
-      return total + (item.quantidade * item.valorUnitario);
+      const quantity = item.quantidade || 0;
+      const unitPrice = item.valorUnitario || 0;
+      return total + (quantity * unitPrice);
     }, 0);
   };
 
@@ -250,13 +251,19 @@ const CadastroPedido = () => {
         return;
     }
 
-    const itensValidos = itensPedido.filter(item => item.produtoId && item.quantidade > 0);
+    const itensValidos = itensPedido.filter(item =>
+        item.produtoId &&
+        (item.quantidade > 0) &&
+        (item.valorUnitario >= 0)
+    );
 
     if (itensValidos.length === 0) {
-        setMessage({ type: 'error', text: 'Adicione pelo menos um produto válido ao pedido.' });
+        setMessage({ type: 'error', text: 'Adicione pelo menos um produto válido ao pedido (com produto selecionado e quantidade > 0).' });
         setLoading(false);
         return;
     }
+
+    const totalCalculado = calcularTotal();
 
     const pedidoParaBackend = {
         supplier_id: formData.fornecedorId,
@@ -268,12 +275,12 @@ const CadastroPedido = () => {
             quantity: item.quantidade,
             unit_price: item.valorUnitario
         })),
-        total_amount: calcularTotal()
+        total_amount: totalCalculado
     };
 
     try {
       const response = await api.post('/api/pedidos', pedidoParaBackend);
-      setMessage({ type: 'success', text: `✅ Pedido criado com sucesso! Total: R$ ${calcularTotal().toFixed(2)}` });
+      setMessage({ type: 'success', text: `✅ Pedido #${response.data._id.substring(0, 8)} criado com sucesso! Total: R$ ${totalCalculado.toFixed(2).replace('.', ',')}` });
 
       // Resetar form
       setFormData({
@@ -308,7 +315,7 @@ const CadastroPedido = () => {
 
   return (
     <div className={styles['dashboard-container']}>
-      {/* SIDEBAR (Sem alterações) */}
+      {/* SIDEBAR */}
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
@@ -333,6 +340,8 @@ const CadastroPedido = () => {
 
         <form className={styles.formCard} onSubmit={handleSubmit}>
           <h2 className={styles.sectionTitle}>Dados do Pedido</h2>
+
+          {/* LINHA DE DADOS PRINCIPAIS - Ajustado para usar fieldGroup com flex-1 dentro de row */}
           <div className={styles.row}>
              <div className={styles.fieldGroup}>
                 <label>Fornecedor <span className={styles.requiredAsterisk}>*</span></label>
@@ -340,7 +349,7 @@ const CadastroPedido = () => {
                     name="fornecedorId"
                     value={formData.fornecedorId}
                     onChange={handleChange}
-                    className={styles.inputMedium}
+                    className={styles.inputLong}
                     required
                 >
                     <option value="" disabled>Selecione um fornecedor</option>
@@ -357,7 +366,7 @@ const CadastroPedido = () => {
                     name="dataPedido"
                     value={formData.dataPedido}
                     onChange={handleChange}
-                    className={styles.inputMedium}
+                    className={styles.inputLong}
                     required
                 />
             </div>
@@ -379,32 +388,32 @@ const CadastroPedido = () => {
 
           {/* Aviso se nenhum fornecedor foi selecionado */}
           {isProductSelectionDisabled && (
-              <p className={styles.warningMessage} style={{ color: '#d97706', marginBottom: '10px' }}>
-                  ⚠️ Selecione um <strong>Fornecedor</strong> acima para liberar a lista de produtos.
+              <p className={styles.warningMessage} style={{ marginBottom: '15px' }}>
+                  <span style={{ marginRight: '5px' }}>⚠️</span> Selecione um **Fornecedor** acima para liberar a lista de produtos.
               </p>
           )}
 
-          {/* === CABEÇALHO DA TABELA DE ITENS CORRIGIDO === */}
-          <div className={styles.itemHeader}>
-              <div className={`${styles.headerColumn} ${styles.colProduct}`}>Produto</div>
-              <div className={`${styles.headerColumn} ${styles.colTiny} ${styles.alignRight}`}>Qtd.</div>
-              <div className={`${styles.headerColumn} ${styles.colTiny} ${styles.alignRight}`}>Valor Unit. (R$)</div>
-              <div className={`${styles.headerColumn} ${styles.itemTotalDisplay}`}>Total Item</div>
-              {/* Placeholder para o botão de lixeira, para alinhamento horizontal */}
-              <div className={styles.removeItemButton} style={{ visibility: 'hidden' }}></div>
+          {/* === CABEÇALHO DA TABELA DE ITENS (GRID) === */}
+          <div className={styles.itemGridHeader}>
+              <div className={styles.colProductHeader}>Produto</div>
+              {/* Uso da classe auxiliar alignRight para centralizar/alinhar */}
+              <div className={`${styles.colTinyHeader} ${styles.alignRight}`}>Qtd.</div>
+              <div className={`${styles.colTinyHeader} ${styles.alignRight}`}>Valor Unit. (R$)</div>
+              <div className={styles.colTotalHeader}>Total Item</div>
+              <div className={styles.colRemoveButtonPlaceholder}></div>
           </div>
           {/* ======================================= */}
 
 
           {itensPedido.map((item, index) => (
-            <div key={index} className={styles.itemRow}>
+            <div key={index} className={styles.itemGridRow}>
                 {/* 1. CAMPO PRODUTO (Custom Dropdown) */}
-                <div className={`${styles.fieldGroupItem} ${styles.colProduct}`}>
+                <div className={styles.colProductInput}>
                     <CustomProductDropdown
                         options={filteredProdutos}
                         value={item.produtoId}
                         onChange={(e) => handleItemChange(index, e, filteredProdutos)}
-                        placeholder={isProductSelectionDisabled ? "Selecione o Fornecedor" : "Selecione um produto"}
+                        placeholder={isProductSelectionDisabled ? "Fornecedor não selecionado" : "Selecione um produto"}
                         required={true}
                         index={index}
                         disabled={isProductSelectionDisabled}
@@ -412,35 +421,35 @@ const CadastroPedido = () => {
                 </div>
 
                 {/* 2. CAMPO QTD */}
-                <div className={`${styles.fieldGroupItem} ${styles.colTiny}`}>
+                <div className={styles.colTinyInput}>
                     <input
                         type="number"
                         name="quantidade"
                         value={item.quantidade}
                         onChange={(e) => handleItemChange(index, e, filteredProdutos)}
                         min="1"
-                        className={styles.inputTiny} /* A classe inputTiny define a largura 100% do container */
+                        className={styles.inputItem}
                         required
                         disabled={isProductSelectionDisabled}
                     />
                 </div>
 
                 {/* 3. CAMPO VALOR UNIT. */}
-                <div className={`${styles.fieldGroupItem} ${styles.colTiny}`}>
+                <div className={styles.colTinyInput}>
                     <input
-                        type="number"
+                        type="text"
                         name="valorUnitario"
-                        value={item.valorUnitario.toFixed(2)}
+                        // Formatação para mostrar com vírgula (R$ 0,00)
+                        value={item.valorUnitario.toFixed(2).replace('.', ',')}
                         onChange={(e) => handleItemChange(index, e, filteredProdutos)}
-                        step="0.01"
-                        min="0"
-                        className={styles.inputTiny} /* A classe inputTiny define a largura 100% do container */
+                        className={styles.inputItem}
                         disabled={isProductSelectionDisabled}
                     />
                 </div>
 
-                {/* 4. CAMPO TOTAL ITEM */}
-                <div className={styles.fieldGroupItemTotal}>
+                {/* 4. CAMPO TOTAL ITEM (Display) */}
+                <div className={styles.colTotalDisplay}>
+                    {/* Formatação para usar vírgula */}
                     <p className={styles.totalItem}>R$ {(item.quantidade * item.valorUnitario).toFixed(2).replace('.', ',')}</p>
                 </div>
 
@@ -450,6 +459,7 @@ const CadastroPedido = () => {
                     className={styles.removeItemButton}
                     onClick={() => handleRemoveItem(index)}
                     disabled={itensPedido.length === 1 || isProductSelectionDisabled}
+                    title={itensPedido.length === 1 ? "O pedido deve ter pelo menos um item" : "Remover item"}
                 >
                     <FiTrash2 size={18} />
                 </button>
@@ -457,13 +467,17 @@ const CadastroPedido = () => {
           ))}
 
           <div className={styles.addItemSection}>
-            <button type="button" className={styles.addItemButton} onClick={handleAddItem} disabled={isProductSelectionDisabled}>
+            <button type="button" className={styles.addItemButton} onClick={handleAddItem} disabled={isProductSelectionDisabled || filteredProdutos.length === 0}>
               <FiPlus size={18} /> Adicionar Novo Item
             </button>
+            {filteredProdutos.length === 0 && formData.fornecedorId && (
+                 <p className={styles.noProductsMessage}>⚠️ Este fornecedor não possui produtos ativos cadastrados.</p>
+            )}
           </div>
 
           <div className={styles.totalPedidoContainer}>
               <p className={styles.totalLabel}>Total do Pedido:</p>
+              {/* Formatação para usar vírgula */}
               <p className={styles.totalValue}>R$ {calcularTotal().toFixed(2).replace('.', ',')}</p>
           </div>
 

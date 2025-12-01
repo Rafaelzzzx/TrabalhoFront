@@ -1,0 +1,469 @@
+/* Arquivo: src/styles/Pedido.module.css - Estilos completos para a tela de Cadastro de Pedido */
+
+/* =======================================================
+   CONFIGURAÇÃO GERAL E LAYOUT
+   ======================================================= */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background-color: #f4f7fa;
+}
+
+/* --- SIDEBAR (Inclua este bloco se a sidebar estiver neste arquivo) --- */
+.sidebar {
+    width: 250px;
+    background-color: #0c2b4e; /* Azul Escuro */
+    color: white;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.menuItem {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.menuItem:hover {
+    background-color: #1a4a7d;
+}
+.menuItem span {
+    margin-left: 10px;
+    font-size: 15px;
+}
+.active .menuItem {
+    background-color: #1a4a7d;
+    border-left: 4px solid #007bff; /* Linha de destaque */
+}
+.linkReset {
+    text-decoration: none;
+    color: inherit;
+}
+/* --------------------------------------------------------------------- */
+
+/* --- Conteúdo Principal --- */
+.main-content {
+  flex: 1;
+  padding: 30px 40px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.header h1 {
+  font-size: 30px;
+  color: #333;
+  margin: 0;
+  font-weight: 700;
+}
+
+.divider {
+  margin: 40px 0;
+  border: 0;
+  border-top: 1px solid #ddd;
+}
+
+/* =======================================================
+   ESTILOS DE FORMULÁRIO (Card de Cadastro)
+   ======================================================= */
+.formCard {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+}
+
+.sectionTitle {
+  font-size: 22px;
+  color: #1a4a7d;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+  margin-top: 25px;
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+.fieldGroup {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldGroup label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.fieldGroup input,
+.fieldGroup select,
+.fieldGroup textarea {
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.fieldGroup input:focus,
+.fieldGroup select:focus,
+.fieldGroup textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  outline: none;
+}
+
+/* CLASSES DE TAMANHO */
+.inputLong { width: 100%; }
+.inputMedium { width: 100%; max-width: 300px; }
+.inputSmall { width: 100%; max-width: 200px; }
+.textareaLong { width: 100%; resize: vertical; }
+
+.requiredAsterisk {
+  color: #dc3545;
+  margin-left: 4px;
+}
+
+.row {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 20px;
+}
+.row .fieldGroup {
+    flex: 1; /* Garante que os fieldGroups dentro de row dividam o espaço */
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.submitButton {
+  background-color: #28a745;
+  color: white;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.submitButton:hover { background-color: #218838; transform: translateY(-2px); }
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* =======================================================
+   MENSAGENS E FEEDBACK
+   ======================================================= */
+.alertMessage {
+  padding: 15px 20px;
+  margin-bottom: 25px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.success { background-color: #e6ffed; color: #1a6f37; border: 1px solid #b7e3c9; }
+.error { background-color: #fff0f0; color: #a12d33; border: 1px solid #f0b7b7; }
+.warning { background-color: #fffbe6; color: #b7791f; border: 1px solid #fae3a1; }
+.warningMessage { color: #d97706; font-weight: 500; }
+.loadingMessage { text-align: center; padding: 50px; color: #555; }
+.noProductsMessage {
+    font-size: 14px;
+    color: #dc3545;
+    margin-top: 10px;
+}
+
+/* =======================================================
+   COMPONENTE DROPDOWN (PRODUTOS)
+   ======================================================= */
+.customDropdownContainer {
+    position: relative;
+    width: 100%;
+}
+
+.dropdownInput {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    min-height: 46px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.dropdownInput.active {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.arrowIcon {
+    transition: transform 0.3s;
+    color: #555;
+}
+
+.arrowIcon.up {
+    transform: rotate(180deg);
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    max-height: 250px;
+    overflow-y: auto;
+    margin-top: 4px;
+    z-index: 1000;
+}
+
+.dropdownItem {
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 15px;
+}
+
+.dropdownItem:hover {
+    background-color: #f0f8ff;
+    color: #0c2b4e;
+}
+
+.dropdownItem.selected {
+    background-color: #e6f7ff;
+    font-weight: 600;
+    color: #007bff;
+}
+
+/* =======================================================
+   TABELA DE ITENS (GRID)
+   ======================================================= */
+
+/* Classe auxiliar para alinhar texto à direita */
+.alignRight {
+    text-align: right !important;
+}
+
+.itemGridHeader,
+.itemGridRow {
+    display: grid;
+    /* Colunas: Produto(4fr) | Qtd(1fr) | Valor Unit.(1.5fr) | Total Item(1.5fr) | Remover(40px) */
+    grid-template-columns: minmax(200px, 4fr) 1fr 1.5fr 1.5fr 40px;
+    gap: 15px;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.itemGridHeader {
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: 700;
+    color: #555;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.colProductHeader { grid-column: 1; }
+.colTinyHeader { text-align: right; }
+.colTotalHeader { text-align: right; padding-right: 15px; }
+.colRemoveButtonPlaceholder { grid-column: 5; }
+
+.itemGridRow {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.itemGridRow:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.colTinyInput input {
+    text-align: right;
+}
+
+.inputItem {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    height: 46px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.inputItem:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    outline: none;
+}
+
+.colTotalDisplay {
+    text-align: right;
+    font-weight: 600;
+    color: #0c2b4e;
+    font-size: 1.1em;
+    padding-right: 15px;
+}
+
+.totalItem {
+    margin: 0;
+    line-height: 46px;
+}
+
+.removeItemButton {
+    background: #dc3545;
+    color: white;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+    margin-left: auto;
+}
+
+.removeItemButton:hover:not(:disabled) {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.removeItemButton:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+}
+
+.addItemSection {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 10px;
+}
+
+.addItemButton {
+    background-color: #007bff;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+.addItemButton:hover:not(:disabled) { background-color: #0056b3; }
+.addItemButton:disabled { background-color: #ccc; cursor: not-allowed; }
+
+.totalPedidoContainer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 2px solid #0c2b4e;
+    margin-top: 30px;
+}
+
+.totalLabel {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #555;
+    margin-right: 15px;
+    margin: 0;
+}
+
+.totalValue {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0c2b4e;
+    margin: 0;
+}
+
+/* =======================================================
+   MEDIA QUERY PARA MOBILE
+   ======================================================= */
+@media (max-width: 768px) {
+
+  .row { flex-direction: column; gap: 0; }
+  .fieldGroup input, .fieldGroup select { max-width: 100%; }
+
+  .itemGridHeader { display: none; }
+
+  .itemGridRow {
+    grid-template-columns: 100%;
+    gap: 10px;
+    padding: 15px 10px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    position: relative;
+  }
+
+  .colProductInput { order: 1; }
+  .colTinyInput:nth-of-type(2) { order: 2; }
+  .colTinyInput:nth-of-type(3) { order: 3; }
+
+  .colTotalDisplay {
+      order: 5;
+      text-align: left;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #e8e8e8;
+  }
+
+  .removeItemButton {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+  }
+
+  .totalPedidoContainer {
+      flex-direction: column;
+      align-items: flex-end;
+  }
+
+  .addItemButton {
+      margin-left: 0;
+  }
+}

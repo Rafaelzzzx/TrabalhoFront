@@ -1,7 +1,7 @@
-/* Arquivo: src/styles/Pedido.module.css - Estilos completos para a tela de Cadastro de Pedido */
+/* Arquivo: src/styles/Pedidos.module.css */
 
 /* =======================================================
-   CONFIGURAÇÃO GERAL E LAYOUT
+   CONFIGURAÇÃO GLOBAL E LAYOUT (Importado de Loja)
    ======================================================= */
 .dashboard-container {
   display: flex;
@@ -10,42 +10,58 @@
   background-color: #f4f7fa;
 }
 
-/* --- SIDEBAR (Inclua este bloco se a sidebar estiver neste arquivo) --- */
+/* --- Sidebar --- */
 .sidebar {
-    width: 250px;
-    background-color: #0c2b4e; /* Azul Escuro */
-    color: white;
-    padding: 20px 0;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  width: 240px;
+  background-color: #0c2b4e;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
 }
 .sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
+.sidebar ul li {
+  padding: 18px 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 500;
+  border-right: 4px solid transparent;
+  transition: background-color 0.2s, color 0.2s;
+}
+
 .menuItem {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
 }
-.menuItem:hover {
-    background-color: #1a4a7d;
+
+.sidebar ul li:hover:not(.active) {
+  background-color: #1a4a7d;
 }
-.menuItem span {
-    margin-left: 10px;
-    font-size: 15px;
+
+.sidebar ul li.active {
+  background-color: #ffffff;
+  color: #0c2b4e;
+  font-weight: bold;
+  border-radius: 8px 0 0 8px;
+  margin-right: -1px;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-.active .menuItem {
-    background-color: #1a4a7d;
-    border-left: 4px solid #007bff; /* Linha de destaque */
-}
+
 .linkReset {
-    text-decoration: none;
-    color: inherit;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  display: block;
 }
-/* --------------------------------------------------------------------- */
 
 /* --- Conteúdo Principal --- */
 .main-content {
@@ -60,7 +76,7 @@
   margin-bottom: 30px;
 }
 .header h1 {
-  font-size: 30px;
+  font-size: 32px;
   color: #333;
   margin: 0;
   font-weight: 700;
@@ -73,24 +89,24 @@
 }
 
 /* =======================================================
-   ESTILOS DE FORMULÁRIO (Card de Cadastro)
+   ESTILOS DE FORMULÁRIO (Card e Campos - Importado de Loja)
    ======================================================= */
 .formCard {
   background-color: #ffffff;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   margin-top: 20px;
 }
 
 .sectionTitle {
-  font-size: 22px;
-  color: #1a4a7d;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 12px;
-  margin-top: 25px;
+  font-size: 20px;
+  color: #0c2b4e;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+  margin-top: 30px;
   margin-bottom: 25px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .fieldGroup {
@@ -107,54 +123,127 @@
 }
 
 .fieldGroup input,
-.fieldGroup select,
-.fieldGroup textarea {
+.fieldGroup select {
   padding: 12px 15px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .fieldGroup input:focus,
-.fieldGroup select:focus,
-.fieldGroup textarea:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+.fieldGroup select:focus {
+  border-color: #0c2b4e;
+  box-shadow: 0 0 0 3px rgba(12, 43, 78, 0.1);
   outline: none;
 }
 
-/* CLASSES DE TAMANHO */
 .inputLong { width: 100%; }
-.inputMedium { width: 100%; max-width: 300px; }
-.inputSmall { width: 100%; max-width: 200px; }
-.textareaLong { width: 100%; resize: vertical; }
+.inputMedium { flex: 1; } /* Usado em .row */
 
 .requiredAsterisk {
-  color: #dc3545;
+  color: red;
   margin-left: 4px;
 }
 
 .row {
   display: flex;
-  gap: 25px;
+  gap: 20px;
   margin-bottom: 20px;
-}
-.row .fieldGroup {
-    flex: 1; /* Garante que os fieldGroups dentro de row dividam o espaço */
 }
 
 .footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between; /* Mantido de Loja.module.css */
   align-items: center;
   margin-top: 40px;
   padding-top: 20px;
   border-top: 1px solid #eee;
 }
 
-.submitButton {
-  background-color: #28a745;
+/* ⭐️ NOVO: Estilos para o textarea longo, para se comportar bem em .row */
+.fieldGroup:has(.textareaLong) {
+    max-width: none;
+}
+.textareaLong {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* =======================================================
+   ESTILOS DE BUSCA E LISTA (Importado de Loja)
+   ======================================================= */
+.search-section {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+}
+
+.search-header {
+  font-size: 20px; /* Alterado para 20px para consistência com sectionTitle */
+  color: #0c2b4e;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+.search-inputs {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.search-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 180px;
+}
+
+.search-group label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.search-group input,
+.search-group select { /* Adicionado select para busca */
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 100%;
+}
+
+/* --- Botões Gerais (De Loja) --- */
+.btn-search {
+  background-color: #0c2b4e;
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.3s, transform 0.1s;
+  height: 46px; /* Ajustado para alinhar com inputs de 46px de altura */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-search:hover { background-color: #1a4a7d; transform: translateY(-2px); }
+.btn-search:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
+
+.submitButton { /* Botão de Ação Principal (Verde em Loja, Azul em Pedidos) */
+  background-color: #4CAF50; /* Verde de Loja */
   color: white;
   padding: 12px 30px;
   border: none;
@@ -165,305 +254,486 @@
   transition: background-color 0.3s, transform 0.1s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-.submitButton:hover { background-color: #218838; transform: translateY(-2px); }
-.submitButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-  transform: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.submitButton:hover { background-color: #45a049; transform: translateY(-2px); }
+.submitButton:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
+
+
+/* --- Lista Grid (Cards) - Para Gerenciamento/Busca de Pedidos (Importado de Loja) --- */
+/* Se for usar uma tabela de pedidos, use as classes abaixo */
+.provider-list-container {
+  margin-top: 20px;
+  padding: 0;
 }
 
-/* =======================================================
-   MENSAGENS E FEEDBACK
-   ======================================================= */
-.alertMessage {
-  padding: 15px 20px;
-  margin-bottom: 25px;
+.grid-style {
+  display: grid;
+  /* Ajuste as colunas para Pedidos: (Ex: ID | Cliente | Status | Total | Ações) */
+  grid-template-columns: 1fr 3fr 1.5fr 1.5fr 130px;
+  gap: 15px;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid #eee;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.provider-list-item {
+  composes: grid-style;
+  background-color: #fff;
+  margin-bottom: 8px;
   border-radius: 8px;
-  font-size: 16px;
-  line-height: 1.4;
-  font-weight: 500;
 }
 
-.success { background-color: #e6ffed; color: #1a6f37; border: 1px solid #b7e3c9; }
-.error { background-color: #fff0f0; color: #a12d33; border: 1px solid #f0b7b7; }
-.warning { background-color: #fffbe6; color: #b7791f; border: 1px solid #fae3a1; }
-.warningMessage { color: #d97706; font-weight: 500; }
-.loadingMessage { text-align: center; padding: 50px; color: #555; }
-.noProductsMessage {
-    font-size: 14px;
-    color: #dc3545;
-    margin-top: 10px;
+.provider-list-header {
+  composes: grid-style;
+  background-color: #e9ecef;
+  cursor: default;
+  box-shadow: none;
+  margin-bottom: 8px;
+  border-radius: 8px;
 }
 
-/* =======================================================
-   COMPONENTE DROPDOWN (PRODUTOS)
-   ======================================================= */
-.customDropdownContainer {
-    position: relative;
-    width: 100%;
+.header-cell {
+  color: #007bff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+.header-cell-actions {
+  composes: header-cell;
+  justify-content: flex-end;
+  display: flex;
 }
 
-.dropdownInput {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: #fff;
-    cursor: pointer;
-    font-size: 16px;
-    min-height: 46px;
-    box-sizing: border-box;
-    width: 100%;
+.detail-cell {
+  color: #000;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+.detail-cell-name p { font-weight: bold; margin: 0; }
+
+
+/* Ações e Botões da Lista (De Loja) */
+.item-actions {
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+  align-items: center;
 }
 
-.dropdownInput.active {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+.btn-edit { /* Azul para Edição */
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px;
+  min-width: 36px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
 }
+.btn-edit:hover { background: #0056b3; transform: scale(1.05); }
 
-.arrowIcon {
-    transition: transform 0.3s;
-    color: #555;
+.btn-delete { /* Vermelho */
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 8px;
+  min-width: 36px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
 }
+.btn-delete:hover { background: #d32f2f; transform: scale(1.05); }
 
-.arrowIcon.up {
-    transform: rotate(180deg);
-}
 
-.dropdownMenu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    max-height: 250px;
-    overflow-y: auto;
-    margin-top: 4px;
-    z-index: 1000;
-}
+/* Cores de Status no Texto */
+.statusOn { color: #28a745; font-weight: bold; } /* Verde - Ativo */
+.statusOff { color: #dc3545; font-weight: bold; } /* Vermelho - Inativo */
+.statusPending { color: #ffc107; font-weight: bold; } /* Amarelo - Pendente (Adicionado para Pedidos) */
+.statusDelivered { color: #007bff; font-weight: bold; } /* Azul - Entregue (Adicionado para Pedidos) */
 
-.dropdownItem {
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    font-size: 15px;
-}
-
-.dropdownItem:hover {
-    background-color: #f0f8ff;
-    color: #0c2b4e;
-}
-
-.dropdownItem.selected {
-    background-color: #e6f7ff;
-    font-weight: 600;
-    color: #007bff;
-}
 
 /* =======================================================
-   TABELA DE ITENS (GRID)
+   ESTILOS ESPECÍFICOS PARA ITENS DO PEDIDO (GRID DE ITENS)
    ======================================================= */
-
-/* Classe auxiliar para alinhar texto à direita */
-.alignRight {
-    text-align: right !important;
-}
 
 .itemGridHeader,
 .itemGridRow {
     display: grid;
-    /* Colunas: Produto(4fr) | Qtd(1fr) | Valor Unit.(1.5fr) | Total Item(1.5fr) | Remover(40px) */
-    grid-template-columns: minmax(200px, 4fr) 1fr 1.5fr 1.5fr 40px;
+    /* 1.5fr (Produto) | 0.4fr (Qtd) | 0.6fr (Valor Unit) | 0.7fr (Total) | 40px (Remover) */
+    grid-template-columns: 1.5fr 0.4fr 0.6fr 0.7fr 40px;
     gap: 15px;
     align-items: center;
     padding: 10px 0;
 }
 
 .itemGridHeader {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0c2b4e;
     border-bottom: 2px solid #e0e0e0;
-    font-weight: 700;
-    color: #555;
-    font-size: 0.85em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
+    padding-bottom: 15px;
+    margin-bottom: 5px;
 }
-
-.colProductHeader { grid-column: 1; }
-.colTinyHeader { text-align: right; }
-.colTotalHeader { text-align: right; padding-right: 15px; }
-.colRemoveButtonPlaceholder { grid-column: 5; }
 
 .itemGridRow {
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 15px;
-    margin-bottom: 15px;
+    border-bottom: 1px dashed #e0e0e0;
 }
 
-.itemGridRow:last-of-type {
+.itemGridRow:last-child {
     border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
 }
 
-.colTinyInput input {
+.alignRight {
     text-align: right;
 }
 
-.inputItem {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px 10px;
-    border: 1px solid #e0e0e0;
+.inputItem { /* Estilo para inputs dentro da linha do item */
+    padding: 10px 12px;
+    border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 16px;
-    height: 46px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
 }
-
 .inputItem:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    border-color: #0c2b4e;
+    box-shadow: 0 0 0 3px rgba(12, 43, 78, 0.1);
     outline: none;
 }
 
+
 .colTotalDisplay {
-    text-align: right;
     font-weight: 600;
     color: #0c2b4e;
-    font-size: 1.1em;
-    padding-right: 15px;
 }
 
 .totalItem {
+    font-size: 16px;
     margin: 0;
-    line-height: 46px;
+    text-align: right;
 }
 
 .removeItemButton {
-    background: #dc3545;
-    color: white;
+    background: none;
     border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
+    color: #dc3545;
     cursor: pointer;
+    padding: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s, transform 0.1s;
-    margin-left: auto;
+    transition: opacity 0.3s, background-color 0.3s;
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
 }
-
-.removeItemButton:hover:not(:disabled) {
-    background: #c82333;
-    transform: scale(1.05);
+.removeItemButton:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #c82333;
 }
-
 .removeItemButton:disabled {
-    background: #ccc;
+    color: #ccc;
     cursor: not-allowed;
     opacity: 0.7;
-    transform: none;
+    background-color: transparent;
 }
 
 .addItemSection {
+    margin: 20px 0 10px 0;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-top: 10px;
+    align-items: center;
+    gap: 20px;
 }
 
-.addItemButton {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 15px;
+.addItemButton { /* Mantido do seu pedido.css */
+    background-color: #00C896; /* Verde/Ciano de Sucesso/Adicionar */
+    color: #ffffff;
     border: none;
-    border-radius: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
     font-size: 15px;
     font-weight: 600;
-    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: background 0.3s;
-    margin-top: 10px;
+    transition: background-color 0.3s, opacity 0.3s;
 }
-.addItemButton:hover:not(:disabled) { background-color: #0056b3; }
-.addItemButton:disabled { background-color: #ccc; cursor: not-allowed; }
+
+.addItemButton:hover {
+    background-color: #00b080;
+}
+
+.noProductsMessage {
+    font-size: 14px;
+    color: #ffc107;
+    font-weight: 500;
+}
 
 .totalPedidoContainer {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 20px 0;
-    border-top: 2px solid #0c2b4e;
-    margin-top: 30px;
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
 }
 
 .totalLabel {
-    font-size: 1.2rem;
+    font-size: 18px;
     font-weight: 500;
     color: #555;
     margin-right: 15px;
-    margin: 0;
 }
 
 .totalValue {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #0c2b4e;
+    font-size: 24px;
+    font-weight: 700;
+    color: #00C896; /* Cor de Destaque para Total */
     margin: 0;
 }
 
+/* --- Botões de Ação no Rodapé (Para Pedidos) --- */
+.footer {
+  justify-content: flex-end; /* Alterado para Pedidos: Alinhar botões à direita */
+  gap: 15px;
+}
+
+/* Botão de Cancelar (Cinza) - De Loja.module.css */
+.btnCancel {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btnCancel:hover { background-color: #5a6268; transform: translateY(-2px); }
+
+/* Botão Principal no Rodapé */
+.submitButton:not(.btnDanger) {
+    background-color: #0c2b4e; /* Azul Escuro */
+    color: white;
+}
+.submitButton:not(.btnDanger):hover {
+    background-color: #1a4a7d;
+}
+
 /* =======================================================
-   MEDIA QUERY PARA MOBILE
+   MODAL DE CONFIRMAÇÃO / EDIÇÃO (Importado de Loja)
+   ======================================================= */
+.modalBackdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalContent {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 700px;
+  width: 90%;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modalText {
+  margin-bottom: 25px;
+  color: #555;
+  font-size: 1rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btnDanger { /* Botão de Confirmação Perigosa no Modal (Vermelho) */
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btnDanger:hover { background-color: #c82333; transform: translateY(-2px); }
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =======================================================
+   MENSAGENS E FEEDBACK (Importado de Loja)
+   ======================================================= */
+.alertMessage {
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.alertMessage p { margin: 5px 0; }
+.messageLine { margin: 5px 0; white-space: pre-wrap; }
+
+.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+.no-data {
+  text-align: center; padding: 40px; color: #777;
+  font-size: 16px; background-color: #fff; border-radius: 8px; margin-top: 20px;
+}
+
+/* =======================================================
+   MEDIA QUERIES (Importado de Loja e adaptado para Pedidos)
    ======================================================= */
 @media (max-width: 768px) {
-
-  .row { flex-direction: column; gap: 0; }
-  .fieldGroup input, .fieldGroup select { max-width: 100%; }
-
-  .itemGridHeader { display: none; }
-
-  .itemGridRow {
-    grid-template-columns: 100%;
-    gap: 10px;
-    padding: 15px 10px;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    position: relative;
+  .main-content {
+    padding: 15px;
+  }
+  .formCard {
+    padding: 20px 15px;
+  }
+  .header h1 {
+    font-size: 24px;
+  }
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .row .fieldGroup {
+    min-width: 100%;
   }
 
-  .colProductInput { order: 1; }
-  .colTinyInput:nth-of-type(2) { order: 2; }
-  .colTinyInput:nth-of-type(3) { order: 3; }
+  /* Adaptação para o Grid de Itens do Pedido */
+  .itemGridHeader {
+    display: none; /* Oculta o header da coluna no mobile */
+  }
+  .itemGridRow {
+    grid-template-columns: 1fr 1fr; /* Simplifica para 2 colunas */
+    gap: 10px;
+    padding: 15px;
+    border: 1px solid #eee;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Faz os campos internos preencherem a linha */
+  .itemGridRow > div {
+    width: 100%;
+  }
+
+  .colProductInput {
+    font-weight: bold;
+    order: 1; /* Primeira linha */
+  }
+
+  .alignRight {
+    text-align: left;
+  }
 
   .colTotalDisplay {
-      order: 5;
-      text-align: left;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px dashed #e8e8e8;
+    order: 4; /* Última linha */
+    text-align: right;
+    width: 100%;
+    padding-top: 10px;
+    border-top: 1px dashed #e8e8e8;
   }
 
   .removeItemButton {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    order: 5; /* Garante que fique no topo direito */
   }
 
   .totalPedidoContainer {
       flex-direction: column;
       align-items: flex-end;
   }
-
-  .addItemButton {
-      margin-left: 0;
+  .totalLabel {
+      margin-right: 0;
+      margin-bottom: 5px;
   }
+}
+
+/* Adicione ou ajuste estas classes na seção 'Ações e Botões da Lista' no seu Pedidos.module.css */
+
+.item-actions {
+  display: flex;
+  gap: 5px; /* Reduzi para 5px para caber 3 botões */
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* ⭐️ NOVO/AJUSTADO: Botão de Detalhes (Azul Escuro, sem fundo) */
+.btn-detail {
+  background: transparent;
+  border: none;
+  color: #0c2b4e; /* Cor principal */
+  cursor: pointer;
+  font-size: 20px;
+  padding: 8px;
+  min-width: 36px;
+  transition: color 0.2s, transform 0.3s;
+}
+.btn-detail:hover { color: #1a4a7d; }
+
+/* Classe para girar a seta */
+.btn-rotated {
+  transform: rotate(90deg);
+}
+
+/* --- Detalhes Expandidos (Baseado no seu Loja.module.css) --- */
+.expanded-details-row {
+  /* O grid-column: 1 / -1 garante que o detalhe ocupe toda a largura da grade pai */
+  grid-column: 1 / -1;
+  padding: 12px 20px;
+  background-color: #f1f8ff; /* Fundo azul claro para destaque */
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  font-size: 0.9rem;
+  color: #444;
+  display: grid;
+  /* Configuração para 4 colunas de informação */
+  grid-template-columns: 1.5fr 1fr 1fr 1.5fr;
+  gap: 8px 15px;
+  margin-top: -8px; /* Cola no item de cima (provider-list-item tem margin-bottom de 8px) */
+  margin-bottom: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.detail-full-span { grid-column: span 4; }
+.detail-text-p { margin: 0; }
+.detailLabel {
+    color: #007bff; /* Azul de destaque */
+    font-weight: 600;
+    margin-right: 5px;
 }

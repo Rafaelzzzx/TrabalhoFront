@@ -184,9 +184,7 @@ const CustomProductDropdown = ({ options = [], value = '', onChange, placeholder
     </div>
   );
 };
-// ============================================================================
-// 3. COMPONENTE DE BUSCA E GERENCIAMENTO DE PEDIDOS
-// ============================================================================
+
 // 3. COMPONENTE DE BUSCA E GERENCIAMENTO DE PEDIDOS
 // ============================================================================
 const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {

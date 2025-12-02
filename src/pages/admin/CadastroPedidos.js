@@ -231,7 +231,7 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
     setExpandedPedidoId((prev) => (prev === pedidoId ? null : pedidoId));
   };
 
-  // ⭐ CORREÇÃO DEFINITIVA EM TODO O FILTER
+
   const handleSearch = async () => {
     setLoading(true);
     setSearched(true);

@@ -149,14 +149,14 @@ function Dashboard() {
                         </Link>
                     </li>
                     <li>
-                        <Link href="/admin/Pedidos" className={styles.linkReset}>
+                        <Link href="/admin/CadastroPedidos" className={styles.linkReset}>
                         <div className={styles.menuItem}>
                             <FiShoppingBag size={20} /><span>Pedidos</span>
                         </div></Link>
                     </li>
 
                     <li>
-                        <Link href="/admin/Campanhas" className={styles.linkReset}>
+                        <Link href="/admin/CadastroCampanhas" className={styles.linkReset}>
                             <div className={styles.menuItem}>
                                 <FiTag size={20} /><span>Campanhas</span>
                         </div></Link>
@@ -171,7 +171,7 @@ function Dashboard() {
                     </li>
 
                     <li>
-                        <Link href="/Login" className={styles.linkReset}>
+                        <Link href="/admin/Login" className={styles.linkReset}>
                             <div className={styles.menuItem}>
                                 <FiLogOut size={20} /><span>Sair</span>
                             </div>

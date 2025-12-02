@@ -401,7 +401,7 @@ export default function Campanhas() {
         <li>
             <Link href="/admin/CadastroFornecedor" className={styles.linkReset}>
                 <div className={styles.menuItem}>
-                    <FiUsers size={20} /><span>Cadastrar Fornecedores</span>
+                    <FiUsers size={20} /><span>Fornecedores</span>
                 </div>
             </Link>
         </li>
@@ -410,7 +410,7 @@ export default function Campanhas() {
         <li>
             <Link href="/admin/CadastroLogista" className={styles.linkReset}>
                 <div className={styles.menuItem}>
-                    <FiBox size={20} /><span>Cadastrar Lojistas</span>
+                    <FiBox size={20} /><span>Logistas</span>
                 </div>
             </Link>
         </li>
@@ -419,7 +419,7 @@ export default function Campanhas() {
         <li>
             <Link href="/admin/CadastroProduto" className={styles.linkReset}>
                 <div className={styles.menuItem}>
-                    <FiPackage size={20} /><span>Cadastrar Produtos</span>
+                    <FiPackage size={20} /><span>Produtos</span>
                 </div>
             </Link>
         </li>
@@ -435,7 +435,7 @@ export default function Campanhas() {
 
         {/* 6. Campanhas */}
         <li>
-            <Link href="/admin/Campanhas" className={styles.linkReset}>
+            <Link href="/admin/Campanha" className={styles.linkReset}>
                 <div className={styles.menuItem}>
                     <FiTag size={20} /><span>Campanhas</span>
                 </div>

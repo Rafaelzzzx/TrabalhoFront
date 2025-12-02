@@ -105,7 +105,7 @@ function Dashboard() {
 
     // Cards dinâmicos com dados do estado
     const cardData = [
-        { title: 'Total de Lojistas', value: loading ? '...' : stats.totalLojas, color: '#0c2b4e' },
+        { title: 'Total de Logistas', value: loading ? '...' : stats.totalLojas, color: '#0c2b4e' },
         { title: 'Total de Fornecedores', value: loading ? '...' : stats.totalFornecedores, color: '#1a4a7d' },
         { title: 'Pedidos Totais', value: 'Em breve', color: '#4CAF50' }, // Placeholder
         { title: 'Campanhas Ativas', value: 'Em breve', color: '#dc3545' }, // Placeholder
@@ -128,7 +128,7 @@ function Dashboard() {
                     <li>
                         <Link href="/admin/CadastroFornecedor" className={styles.linkReset}>
                             <div className={styles.menuItem}>
-                                <FiUsers size={20} /><span>Cadastrar Fornecedores</span>
+                                <FiUsers size={20} /><span>Fornecedores</span>
                             </div>
                         </Link>
                     </li>
@@ -136,7 +136,7 @@ function Dashboard() {
                     <li>
                         <Link href="/admin/CadastroLogista" className={styles.linkReset}>
                             <div className={styles.menuItem}>
-                                <FiBox size={20} /><span>Cadastrar Logistas</span>
+                                <FiBox size={20} /><span>Logistas</span>
                             </div>
                         </Link>
                     </li>
@@ -144,7 +144,7 @@ function Dashboard() {
                     <li>
                         <Link href="/admin/CadastroProduto" className={styles.linkReset}>
                             <div className={styles.menuItem}>
-                                <FiPackage size={20} /><span>Cadastrar Produtos</span>
+                                <FiPackage size={20} /><span>Produtos</span>
                             </div>
                         </Link>
                     </li>

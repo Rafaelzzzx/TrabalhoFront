@@ -16,7 +16,9 @@ import {
   FiSearch,
   FiEdit,
   FiChevronLeft,
-  FiChevronRight
+  FiChevronRight,
+  FiShoppingBag,
+  FiTag
 } from 'react-icons/fi';
 
 // ============================================================================
@@ -661,7 +663,8 @@ const CadastroPedido = () => {
     setMessage(null);
 
     try {
-      const respFornecedores = await api.get('/api/fornecedores');
+     
+      const respFornecedores = await api.get('/api/fornecedores/cadastroFornecedor');
       // Garante que os IDs sejam string e tratados com trim
       const normalizedFornecedores = Array.isArray(respFornecedores.data) ? respFornecedores.data.map(f => ({ ...f, _id: String(f._id).trim() })) : [];
       setFornecedores(normalizedFornecedores);
@@ -830,15 +833,80 @@ const CadastroPedido = () => {
   return (
     <div className={styles['dashboard-container']}>
       <nav className={styles.sidebar}>
-        <ul>
-          <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
-          <li className={styles.active}><Link href="/admin/CadastroPedido" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Pedido</span></div></Link></li>
-          <li><Link href="/admin/GerenciarPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Gerenciar Pedidos</span></div></Link></li>
-          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
-          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
-          <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
-        </ul>
-      </nav>
+    <ul>
+        {/* 1. Dashboard */}
+        <li>
+            <Link href="/admin/Dashboard" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiGrid size={20} /><span>Dashboard</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 2. Cadastrar Fornecedores */}
+        <li>
+            <Link href="/admin/CadastroFornecedor" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiUsers size={20} /><span>Cadastrar Fornecedores</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 3. Cadastrar Lojistas */}
+        <li>
+            <Link href="/admin/CadastroLogista" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiBox size={20} /><span>Cadastrar Lojistas</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 4. Cadastrar Produtos */}
+        <li>
+            <Link href="/admin/CadastroProduto" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiPackage size={20} /><span>Cadastrar Produtos</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 5. Pedidos (ATIVO NESTA PÁGINA) */}
+        <li className={styles.active}>
+            <Link href="/admin/CadastroPedidos" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiShoppingBag size={20} /><span>Pedidos</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 6. Campanhas */}
+        <li>
+            <Link href="/admin/Campanhas" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiTag size={20} /><span>Campanhas</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 7. Perfil */}
+        <li>
+            <Link href="/admin/perfil" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiUser size={20} /><span>Perfil</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 8. Sair */}
+        <li>
+            <Link href="/Login" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiLogOut size={20} /><span>Sair</span>
+                </div>
+            </Link>
+        </li>
+    </ul>
+</nav>
 
       <main className={styles['main-content']}>
         <header className={styles.header}><h1>Cadastrar Novo Pedido</h1></header>

@@ -21,7 +21,7 @@ import {
 } from 'react-icons/fi';
 
 // =========================================================================
-// ⭐️ COMPONENTE AUXILIAR 1: Modal de Edição de Campanha (DEFINIÇÃO CORRETA)
+// ⭐️ COMPONENTE AUXILIAR 1: Modal de Edição de Campanha
 // =========================================================================
 const EditCampanhaModal = ({ campanha, onSave, onCancel, loading }) => {
     // Mapeia os nomes das propriedades
@@ -31,7 +31,9 @@ const EditCampanhaModal = ({ campanha, onSave, onCancel, loading }) => {
         // Garante que o formato é 'yyyy-mm-dd' para o input type="date"
         start_date: campanha.start_date ? campanha.start_date.split('T')[0] : '',
         end_date: campanha.end_date ? campanha.end_date.split('T')[0] : '',
-        discount_percentage: campanha.discount_percentage || ''
+        discount_percentage: campanha.discount_percentage || '',
+        // Incluir status para edição (se for necessário mudar de off para on)
+        status: campanha.status || 'on'
     };
 
     const [formData, setFormData] = useState(initialFormData);
@@ -86,12 +88,19 @@ const EditCampanhaModal = ({ campanha, onSave, onCancel, loading }) => {
                         </div>
                     </div>
 
-                    {/* Linha 3: Desconto */}
+                    {/* Linha 3: Desconto e Status */}
                     <div className={styles.row}>
                         <div className={styles.fieldGroup} style={{ maxWidth: '150px' }}>
                             <label>Desconto (%)</label>
                             <input type="number" name="discount_percentage" value={formData.discount_percentage} onChange={handleChange} required min="0" max="100" className={styles.inputModal} />
                         </div>
+                        <div className={styles.fieldGroup} style={{ maxWidth: '150px' }}>
+                             <label>Status</label>
+                             <select name="status" value={formData.status || 'on'} onChange={handleChange} className={styles.inputModal}>
+                                 <option value="on">Ativo</option>
+                                 <option value="off">Inativo</option>
+                             </select>
+                         </div>
                     </div>
 
                     <div className={styles.modalActions}>
@@ -136,6 +145,8 @@ export default function Campanhas() {
     const [deleteId, setDeleteId] = useState(null); // Estado para exclusão
     const [showConfirm, setShowConfirm] = useState(false); // Estado para modal de confirmação
     const [expandedId, setExpandedId] = useState(null); // Estado para expandir detalhes
+    // ⭐️ NOVO ESTADO: Armazena a ação atual (deactivate ou delete)
+    const [currentAction, setCurrentAction] = useState('deactivate');
 
     // Paginação
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -147,17 +158,20 @@ export default function Campanhas() {
         setLoading(true);
         setMessage(null);
         try {
-            // Rota de busca: GET /api/campaigns
-            const response = await api.get('/api/campaigns');
-            setCampanhas(response.data);
-            // Mensagem de erro 404 será removida após o primeiro sucesso
-            if (response.data.length > 0) {
+            // Rota de busca: GET /api/campanhas
+            const response = await api.get('/api/campanhas');
+            // Mapeia os dados para garantir que todos tenham status, se o backend não fornecer
+            const dataWithStatus = response.data.map(item => ({
+                ...item,
+                status: item.status || 'on' // Adiciona status 'on' por padrão
+            }));
+            setCampanhas(dataWithStatus);
+            if (dataWithStatus.length > 0) {
                  setMessage(null);
             }
         } catch (error) {
             console.error('Erro ao buscar campanhas:', error);
-            // Manter a mensagem de erro 404 se a busca falhar
-            setMessage({ type: 'error', text: 'Erro ao buscar campanhas. Verifique a rota /api/campaigns.' });
+            setMessage({ type: 'error', text: 'Erro ao buscar campanhas. Verifique a rota /api/campanhas.' });
         } finally {
              setLoading(false);
         }
@@ -178,17 +192,17 @@ export default function Campanhas() {
         try {
             const payload = {
                 ...form,
-                discount_percentage: Number(form.discount_percentage)
+                discount_percentage: Number(form.discount_percentage),
+                status: 'on' // Nova campanha começa ativa
             };
-            // Rota de criação: POST /api/campaigns
-            await api.post('/api/campaigns', payload);
+            await api.post('/api/campanhas', payload);
 
             setForm({ name: '', supplier_id: '', start_date: '', end_date: '', discount_percentage: '' });
             buscarCampanhas();
             setMessage({ type: 'success', text: 'Campanha criada com sucesso!' });
         } catch (error) {
             console.error('Erro ao criar campanha:', error);
-            setMessage({ type: 'error', text: 'Erro ao criar campanha. Verifique a rota /api/campaigns.' });
+            setMessage({ type: 'error', text: 'Erro ao criar campanha. Verifique a rota /api/campanhas.' });
         } finally {
             setLoading(false);
         }
@@ -212,8 +226,7 @@ export default function Campanhas() {
         const { _id, ...dataToSend } = updatedData;
 
         try {
-            // Rota de atualização: PUT /api/campaigns/:id
-            await api.put(`/api/campaigns/${id}`, dataToSend);
+            await api.put(`/api/campanhas/${id}`, dataToSend);
 
             setCampanhas(oldList => oldList.map(item =>
                 item._id === id ? { ...item, ...dataToSend } : item
@@ -230,36 +243,56 @@ export default function Campanhas() {
         }
     };
 
-    const startDelete = (id) => {
+    // ⭐️ NOVO: Inicia a ação (desativar ou deletar)
+    const startAction = (id, type) => {
         setDeleteId(id);
+        setCurrentAction(type); // Define a ação que será executada
         setShowConfirm(true);
     };
 
-    const handleConfirmDelete = async () => {
+
+    // ⭐️ NOVO: Função refatorada para lidar com desativação (PUT) ou exclusão definitiva (DELETE)
+    const handleConfirmAction = async () => {
         if (!deleteId) return;
         setShowConfirm(false);
         setLoading(true);
         setMessage(null);
 
         try {
-            // Rota de exclusão: DELETE /api/campaigns/:id
-            await api.delete(`/api/campaigns/${deleteId}`);
-            setCampanhas(oldList => oldList.filter(item => item._id !== deleteId));
-            setMessage({ type: 'success', text: "Campanha excluída com sucesso!" });
+            if (currentAction === 'delete') {
+                // Lógica para EXCLUSÃO PERMANENTE (DELETE)
+                await api.delete(`/api/campanhas/${deleteId}`);
+                setCampanhas(oldList => oldList.filter(item => item._id !== deleteId));
+                setMessage({ type: 'success', text: "Campanha excluída permanentemente com sucesso!" });
+
+            } else {
+                // Lógica para DESATIVAÇÃO (PUT para status: 'off')
+                await api.put(`/api/campanhas/${deleteId}`, { status: 'off' });
+
+                setCampanhas(oldList => oldList.map(item =>
+                    item._id === deleteId ? { ...item, status: 'off' } : item
+                ));
+                setMessage({ type: 'success', text: "Campanha desativada com sucesso!" });
+            }
+
             if (expandedId === deleteId) setExpandedId(null);
 
         } catch (error) {
-            console.error("Erro ao excluir:", error);
-            setMessage({ type: 'error', text: "Erro ao excluir campanha." });
+            console.error(`Erro ao ${currentAction}:`, error);
+            const actionName = currentAction === 'delete' ? 'excluir' : 'desativar';
+            const errorMessage = error.response?.data?.error || "Erro de rede/servidor.";
+            setMessage({ type: 'error', text: `Erro ao ${actionName}: ${errorMessage}` });
         } finally {
             setLoading(false);
             setDeleteId(null);
+            setCurrentAction('deactivate'); // Reseta a ação para o padrão
         }
     };
 
     const cancelDelete = () => {
         setDeleteId(null);
         setShowConfirm(false);
+        setCurrentAction('deactivate'); // Reseta a ação
     };
 
     const handleToggleExpand = (id) => {
@@ -293,28 +326,34 @@ export default function Campanhas() {
 
 
     // --- Subcomponentes JSX (Modal de Confirmação e Detalhes Expandidos) ---
-    // Mantenho estes dentro do componente principal para melhor escopo, conforme seu código
+    const ConfirmationModal = () => {
+        const isDelete = currentAction === 'delete';
+        const title = isDelete ? 'Confirmação de Exclusão Permanente' : 'Confirmação de Desativação';
+        const text = isDelete
+          ? 'Tem certeza que deseja EXCLUIR PERMANENTEMENTE esta campanha? Esta ação não pode ser desfeita.'
+          : 'Tem certeza que deseja DESATIVAR esta campanha? Ela será marcada como inativa e poderá ser excluída permanentemente depois.';
 
-    const ConfirmationModal = () => (
-        <div className={styles.modalBackdrop}>
-            <div className={styles.modalContent}>
-            <h3 className={styles.modalTitle}>Confirmação de Exclusão</h3>
-            <p className={styles.modalText}>Tem certeza que deseja EXCLUIR PERMANENTEMENTE esta campanha? Esta ação não pode ser desfeita.</p>
-            <div className={styles.modalActions}>
-                <button className={`${styles.submitButton} ${styles.btnCancel}`} onClick={cancelDelete}>
-                Cancelar
-                </button>
-                <button
-                className={`${styles.submitButton} ${styles.btnDanger}`}
-                onClick={handleConfirmDelete}
-                disabled={loading}
-                >
-                {loading ? 'Processando...' : 'Confirmar Exclusão'}
-                </button>
+        return (
+            <div className={styles.modalBackdrop}>
+                <div className={styles.modalContent}>
+                <h3 className={styles.modalTitle}>{title}</h3>
+                <p className={styles.modalText}>{text}</p>
+                <div className={styles.modalActions}>
+                    <button className={`${styles.submitButton} ${styles.btnCancel}`} onClick={cancelDelete}>
+                    Cancelar
+                    </button>
+                    <button
+                    className={`${styles.submitButton} ${styles.btnDanger}`}
+                    onClick={handleConfirmAction}
+                    disabled={loading}
+                    >
+                    {loading ? 'Processando...' : `Confirmar ${isDelete ? 'Exclusão' : 'Desativação'}`}
+                    </button>
+                </div>
+                </div>
             </div>
-            </div>
-        </div>
-    );
+        );
+    };
 
     const ExpandedDetailsRow = ({ item }) => (
         <div className={styles['expanded-details-row']}>
@@ -328,9 +367,12 @@ export default function Campanhas() {
                     <strong className={styles.detailLabel}>Fornecedor ID:</strong> {item.supplier_id}
                 </p>
             </div>
-            <div className={styles['detail-half-span']}>
+            <div className={`${styles['detail-half-span']} ${styles['detail-status']}`}>
                 <p className={styles['detail-text-p']}>
-                    <strong className={styles.detailLabel}>Desconto Aplicado:</strong> {item.discount_percentage}%
+                    <strong className={styles.detailLabel}>Status:</strong>
+                    <span className={item.status === 'off' ? styles.statusOff : styles.statusOn}>
+                        {' '}{item.status || 'on'}
+                    </span>
                 </p>
             </div>
         </div>
@@ -432,12 +474,19 @@ export default function Campanhas() {
                     {visibleItems.length > 0 ? (
                         visibleItems.map((item) => {
                             const isExpanded = expandedId === item._id;
+                            // ⭐️ NOVO: Verifica o status
+                            const isDeactivated = item.status === 'off';
+
+                            // ⭐️ NOVO: Classes dinâmicas para item cinza
+                            let itemClasses = styles['provider-list-item'];
+                            if (isExpanded) itemClasses += ` ${styles['item-expanded']}`;
+                            if (isDeactivated) itemClasses += ` ${styles['item-status-off']}`;
+
 
                             return (
                                 <React.Fragment key={item._id}>
                                     <div
-                                        className={`${styles['provider-list-item']} ${isExpanded ? styles['item-expanded'] : ''}`}
-                                        // O onClick do item principal apenas expande/fecha, sem interferir nos botões
+                                        className={itemClasses}
                                         onClick={() => handleToggleExpand(item._id)}
                                     >
                                         <div className={styles['detail-cell-name']} style={{ flex: '3fr' }}>
@@ -473,8 +522,16 @@ export default function Campanhas() {
                                             </button>
                                             <button
                                                 className={styles['btn-delete']}
-                                                onClick={(e) => { e.stopPropagation(); startDelete(item._id); }}
-                                                title="Excluir Campanha"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    // ⭐️ Lógica de dois passos:
+                                                    if (isDeactivated) {
+                                                        startAction(item._id, 'delete'); // Exclusão definitiva
+                                                    } else {
+                                                        startAction(item._id, 'deactivate'); // Desativação
+                                                    }
+                                                }}
+                                                title={isDeactivated ? "Excluir Permanentemente" : "Desativar Campanha"}
                                                 disabled={loading}
                                             >
                                                 <FiTrash2 size={18} />

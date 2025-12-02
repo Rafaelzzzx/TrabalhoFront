@@ -4,7 +4,7 @@ import styles from '../../styles/Loja.module.css'; // Usando o mesmo arquivo CSS
 import api from '../../services/api';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox,
-  FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight, FiEdit
+  FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight, FiEdit, FiShoppingBag, FiTag
 } from 'react-icons/fi';
 
 // --- NOVO COMPONENTE: MODAL DE EDIÇÃO PARA LOGISTAS ---
@@ -589,6 +589,8 @@ export default function CadastroLogista() {
           <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastrar Fornecedores</span></div></Link></li>
           <li className={styles.active}><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Logistas</span></div></Link></li>
           <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
+          <li><Link href="/admin/Pedidos" className={styles.linkReset}><div className={styles.menuItem}><FiShoppingBag size={20} /><span>Pedidos</span></div></Link></li>
+          <li><Link href="/admin/Campanhas" className={styles.linkReset}><div className={styles.menuItem}><FiTag size={20} /><span>Campanhas</span></div></Link></li>
           <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
           <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
         </ul>

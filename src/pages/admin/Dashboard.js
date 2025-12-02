@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import withAuth from '../../components/withAuth';
-import { FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox } from 'react-icons/fi';
+import { FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox, FiShoppingBag, FiTag } from 'react-icons/fi';
 import { FaShieldAlt } from 'react-icons/fa';
 import api from '../../services/api'; // Sua conexão com o backend
 import styles from '../../styles/Loja.module.css';
@@ -147,6 +147,19 @@ function Dashboard() {
                                 <FiPackage size={20} /><span>Cadastrar Produtos</span>
                             </div>
                         </Link>
+                    </li>
+                    <li>
+                        <Link href="/admin/Pedidos" className={styles.linkReset}>
+                        <div className={styles.menuItem}>
+                            <FiShoppingBag size={20} /><span>Pedidos</span>
+                        </div></Link>
+                    </li>
+
+                    <li>
+                        <Link href="/admin/Campanhas" className={styles.linkReset}>
+                            <div className={styles.menuItem}>
+                                <FiTag size={20} /><span>Campanhas</span>
+                        </div></Link>
                     </li>
 
                     <li>

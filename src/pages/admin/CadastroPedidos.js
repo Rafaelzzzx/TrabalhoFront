@@ -664,7 +664,7 @@ const CadastroPedido = () => {
 
     try {
      
-      const respFornecedores = await api.get('/api/fornecedores/cadastroFornecedor');
+      const respFornecedores = await api.get('/api/fornecedores');
       // Garante que os IDs sejam string e tratados com trim
       const normalizedFornecedores = Array.isArray(respFornecedores.data) ? respFornecedores.data.map(f => ({ ...f, _id: String(f._id).trim() })) : [];
       setFornecedores(normalizedFornecedores);

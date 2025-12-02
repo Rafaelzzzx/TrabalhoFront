@@ -18,6 +18,8 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiArrowRight, // Para o botão de expandir
+  FiShoppingBag,
+  FiTag
 } from 'react-icons/fi';
 
 // =========================================================================
@@ -384,21 +386,81 @@ export default function Campanhas() {
         <div className={styles['dashboard-container']}>
 
         {/* Sidebar (Mantido como estava) */}
-        <aside className={styles.sidebar}>
-            <ul>
-            <Link href="/admin" className={styles.linkReset}><li><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></li></Link>
-            <Link href="/admin/CadastroLogista" className={styles.linkReset}><li><div className={styles.menuItem}><FiUser size={20} /><span>Cadastro Logista</span></div></li></Link>
-            <Link href="/admin/CadastroFornecedor" className={styles.linkReset}><li><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastro Fornecedor</span></div></li></Link>
-            <Link href="/admin/CadastroProdutos" className={styles.linkReset}><li><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastro Produtos</span></div></li></Link>
-            <Link href="/admin/campanhas" className={styles.linkReset}><li className={styles.active}><div className={styles.menuItem}><FiBox size={20} /><span>Campanhas</span></div></li></Link>
-            </ul>
-            <div style={{ marginTop: 'auto', padding: '20px 0' }}>
-            <Link href="/logout" className={styles.linkReset}>
-                <li style={{ padding: '18px 30px', color: '#dc3545', borderRight: '4px solid transparent' }}>
-                <div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></li>
+      <nav className={styles.sidebar}>
+    <ul>
+        {/* 1. Dashboard */}
+        <li>
+            <Link href="/admin/Dashboard" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiGrid size={20} /><span>Dashboard</span>
+                </div>
             </Link>
-            </div>
-        </aside>
+        </li>
+
+        {/* 2. Cadastro Fornecedor (PRIMEIRO) */}
+        <li>
+            <Link href="/admin/CadastroFornecedor" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiUsers size={20} /><span>Cadastrar Fornecedores</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 3. Cadastro Logista (SEGUNDO) */}
+        <li>
+            <Link href="/admin/CadastroLogista" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiBox size={20} /><span>Cadastrar Lojistas</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 4. Cadastro Produtos */}
+        <li>
+            <Link href="/admin/CadastroProduto" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiPackage size={20} /><span>Cadastrar Produtos</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 5. Pedidos */}
+        <li>
+            <Link href="/admin/CadastroPedidos" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiShoppingBag size={20} /><span>Pedidos</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 6. Campanhas */}
+        <li>
+            <Link href="/admin/Campanhas" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiTag size={20} /><span>Campanhas</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 7. Perfil */}
+        <li>
+            <Link href="/admin/perfil" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiUser size={20} /><span>Perfil</span>
+                </div>
+            </Link>
+        </li>
+
+        {/* 8. Sair (Agora junto com os outros) */}
+        <li>
+            <Link href="/Login" className={styles.linkReset}>
+                <div className={styles.menuItem}>
+                    <FiLogOut size={20} /><span>Sair</span>
+                </div>
+            </Link>
+        </li>
+    </ul>
+</nav>
 
         <main className={styles['main-content']}>
 

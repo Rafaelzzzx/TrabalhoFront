@@ -72,7 +72,7 @@ function Dashboard() {
 
                 // 2. Buscando Fornecedores
                 // Ajuste a rota se for diferente no seu backend
-                const resFornecedores = await api.get('/api/fornecedores/cadastroFornecedor');
+                const resFornecedores = await api.get('/api/fornecedores');
                 const fornecedoresData = resFornecedores.data || [];
 
                 // 3. Processando os dados para o Dashboard

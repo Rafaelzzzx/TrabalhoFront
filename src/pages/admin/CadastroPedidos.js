@@ -881,7 +881,7 @@ const CadastroPedido = () => {
 
         {/* 6. Campanhas */}
         <li>
-            <Link href="/admin/Campanhas" className={styles.linkReset}>
+            <Link href="/admin/CadastroCampanha" className={styles.linkReset}>
                 <div className={styles.menuItem}>
                     <FiTag size={20} /><span>Campanhas</span>
                 </div>

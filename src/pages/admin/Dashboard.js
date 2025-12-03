@@ -7,11 +7,9 @@ import {
 } from 'react-icons/fi';
 import { FaShieldAlt } from 'react-icons/fa';
 import api from '../../services/api';
-import styles from '../../styles/Loja.module.css';
+import styles from '../../styles/Geral.module.css';
 
-// ============================================================================
-// 1. COMPONENTE REUTILIZÁVEL: ListaUltimos
-// ============================================================================
+
 const ListaUltimos = ({ title, dados, tipo }) => {
     const gridTemplate = '2fr 1fr 1fr';
 
@@ -59,9 +57,7 @@ const ListaUltimos = ({ title, dados, tipo }) => {
     );
 };
 
-// ============================================================================
-// 2. MODAL DE EDIÇÃO DE USUÁRIO
-// ============================================================================
+
 const EditUsuarioModal = ({ usuario, onSave, onCancel, loading }) => {
     const [formData, setFormData] = useState({
         name: usuario.name || '',
@@ -131,9 +127,7 @@ const EditUsuarioModal = ({ usuario, onSave, onCancel, loading }) => {
     );
 };
 
-// ============================================================================
-// 3. COMPONENTE DE BUSCA DE USUÁRIOS (ROTA CORRIGIDA PARA /api/cadastroUsuario)
-// ============================================================================
+
 const BuscaUsuarios = () => {
     const [searchId, setSearchId] = useState('');
     const [searchName, setSearchName] = useState('');
@@ -152,10 +146,7 @@ const BuscaUsuarios = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const itemsPerPage = 5;
 
-    // Busca automática ao carregar
-    useEffect(() => {
-        handleSearch();
-    }, []);
+
 
     const handleSearch = async () => {
         setLoading(true);
@@ -164,14 +155,13 @@ const BuscaUsuarios = () => {
         setEditingUsuario(null);
 
         try {
-            // ✅ CORREÇÃO AQUI: Rota baseada em app.use('/api', usuarioRoutes) + arquivo cadastroUsuario.js
-            // Muito provável que seja /api/cadastroUsuario
+
             const response = await api.get('/api/cadastroUsuario?status=all');
 
-            // Se falhar na primeira, tenta /api/usuarios como fallback (caso o backend tenha mudado)
+
             let dados = response.data || [];
 
-            // Filtros no Frontend
+
             if (searchId) dados = dados.filter(u => u._id.includes(searchId));
             if (searchName) dados = dados.filter(u => (u.name || '').toLowerCase().includes(searchName.toLowerCase()));
             if (searchEmail) dados = dados.filter(u => (u.contact_email || u.email || '').toLowerCase().includes(searchEmail.toLowerCase()));
@@ -196,7 +186,7 @@ const BuscaUsuarios = () => {
         const { _id, ...dataToSend } = updatedData;
 
         try {
-            // ✅ Rota de Edição
+
             await api.put(`/api/cadastroUsuario/${_id}`, dataToSend);
 
             setUsuarios(old => old.map(u => u._id === _id ? { ...u, ...dataToSend } : u));
@@ -223,12 +213,12 @@ const BuscaUsuarios = () => {
 
         try {
             if (currentAction === 'delete') {
-                // ✅ Rota de Delete
+
                 await api.delete(`/api/cadastroUsuario/${deleteId}`);
                 setUsuarios(old => old.filter(u => u._id !== deleteId));
                 setMessage({ type: 'success', text: "Usuário excluído permanentemente!" });
             } else {
-                // ✅ Rota de Soft Delete (Update)
+
                 await api.put(`/api/cadastroUsuario/${deleteId}`, { status: 'off' });
                 setUsuarios(old => old.map(u => u._id === deleteId ? { ...u, status: 'off' } : u));
                 setMessage({ type: 'success', text: "Usuário desativado com sucesso!" });
@@ -346,7 +336,7 @@ const BuscaUsuarios = () => {
 };
 
 // ============================================================================
-// 4. PÁGINA DASHBOARD PRINCIPAL
+//  PÁGINA DASHBOARD PRINCIPAL
 // ============================================================================
 function Dashboard() {
     const [stats, setStats] = useState({

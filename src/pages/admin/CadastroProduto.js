@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import withAuth from '../../components/withAuth';
 import api from '../../services/api';
-import styles from '../../styles/Loja.module.css';
+import styles from '../../styles/Geral.module.css';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox,
   FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight, FiEdit, FiShoppingBag, FiTag
 } from 'react-icons/fi';
 
-// --- COMPONENTE: MODAL DE EDIÇÃO PARA PRODUTOS ---
+
 const EditProdutoModal = ({ produto, onSave, onCancel, loading, setSearchMessage }) => {
     const initialFormData = {
         name: produto.name || '',
@@ -43,9 +43,8 @@ const EditProdutoModal = ({ produto, onSave, onCancel, loading, setSearchMessage
              return;
         }
 
-        // NOTA: Se a sua rota PUT também esperar chaves em português (nome, preco, etc),
-        // você precisará alterar aqui também. Mantive em inglês assumindo que o PUT
-        // pode estar diferente ou atualizando direto pelo Schema.
+
+
         const dataToSend = {
             name: formData.name,
             description: formData.description,
@@ -122,9 +121,7 @@ const EditProdutoModal = ({ produto, onSave, onCancel, loading, setSearchMessage
     );
 };
 
-// ============================================================================
-// COMPONENTE AUXILIAR: BuscaProdutos
-// ============================================================================
+
 const BuscaProdutos = ({ mainMessageSetter }) => {
     const [searchId, setSearchId] = useState('');
     const [searchName, setSearchName] = useState('');
@@ -450,7 +447,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
     setLoading(true);
     setMessage(null);
 
-    // ⭐️ CORREÇÃO AQUI: Traduzindo para o formato que o BACKEND espera (português)
+
     const dadosParaAPI = {
       nome: formData.nome,
       descricao: formData.descricao,
@@ -460,7 +457,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
       categoria: formData.categoria
     };
 
-    // Validação usando os campos traduzidos
+
     if (isNaN(dadosParaAPI.preco) || isNaN(dadosParaAPI.estoque)) {
         setMessage({ type: 'error', text: "Erro: Preço e Estoque devem ser números válidos." });
         setLoading(false);
@@ -483,7 +480,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
   return (
     <div className={styles["dashboard-container"]}>
 
-      {/* SIDEBAR */}
+
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
@@ -497,7 +494,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
         </ul>
       </nav>
 
-      {/* MAIN CONTENT */}
+
       <main className={styles["main-content"]}>
 
         <header className={styles.header}>

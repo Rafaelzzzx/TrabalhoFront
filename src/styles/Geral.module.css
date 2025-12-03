@@ -88,9 +88,7 @@
   border-top: 1px solid #ddd;
 }
 
-/* =======================================================
-   ESTILOS DE FORMULÁRIO (Card de Cadastro)
-   ======================================================= */
+
 .formCard {
   background-color: #ffffff;
   padding: 30px;
@@ -248,7 +246,7 @@
   width: 100%;
 }
 
-/* --- Botões Gerais --- */
+
 .btn-search {
   background-color: #0c2b4e;
   color: white;
@@ -269,7 +267,7 @@
 .btn-search:hover { background-color: #1a4a7d; transform: translateY(-2px); }
 .btn-search:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
 
-/* ⭐️ CORREÇÃO: Botão de Submissão principal do cadastro (VERDE) */
+
 .submitButton {
   background-color: #4CAF50; /* Verde */
   color: white;
@@ -285,7 +283,7 @@
 .submitButton:hover { background-color: #45a049; transform: translateY(-2px); }
 .submitButton:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
 
-/* --- Lista Grid (Cards) --- */
+
 .provider-list-container {
   margin-top: 20px;
   padding: 0;
@@ -293,8 +291,8 @@
 
 .grid-style {
   display: grid;
-  /* 5 Colunas: Nome | ID | Email | Responsável | Ações */
-  grid-template-columns: 3fr 1.5fr 3fr 2fr 130px; /* Aumentei para caber 3 botões */
+
+  grid-template-columns: 3fr 1.5fr 3fr 2fr 130px;
   gap: 15px;
   align-items: center;
   padding: 10px 20px;
@@ -310,7 +308,7 @@
   border-radius: 8px;
 }
 
-/* Item quando está expandido */
+
 .item-expanded {
   background-color: #eaf5ff !important;
   margin-bottom: 0;
@@ -318,7 +316,7 @@
   border-bottom: none;
 }
 
-/* Item quando está desativado (off) */
+
 .item-status-off {
   background-color: #f0f0f0 !important;
   opacity: 0.8;
@@ -352,7 +350,7 @@
 }
 .detail-cell-name p { font-weight: bold; margin: 0; }
 
-/* Ações e Botões da Lista */
+
 .item-actions {
   display: flex;
   gap: 5px;
@@ -360,9 +358,9 @@
   align-items: center;
 }
 
-/* ⭐️ NOVO: Botão de Edição (Azul) */
+
 .btn-edit {
-  background: #007bff; /* Azul para Edição */
+  background: #007bff;
   color: white;
   border: none;
   padding: 8px;
@@ -375,9 +373,9 @@
 .btn-edit:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 
 
-/* ⭐️ CORREÇÃO: Botão de Delete (Vermelho) */
+
 .btn-delete {
-  background: #f44336; /* Vermelho */
+  background: #f44336;
   color: white;
   border: none;
   padding: 8px;
@@ -401,14 +399,14 @@
 }
 .btn-detail:hover { color: #1a4a7d; }
 
-/* Classe para girar a seta */
+
 .btn-rotated {
   transform: rotate(90deg);
 }
 
-/* --- Detalhes Expandidos --- */
+
 .expanded-details-row {
-  grid-column: 1 / -1; /* Se estiver dentro de um grid pai */
+  grid-column: 1 / -1;
   padding: 12px 20px;
   background-color: #f1f8ff;
   border-top: 1px solid #ddd;
@@ -418,7 +416,7 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
   gap: 8px 15px;
-  margin-top: -8px; /* Cola no item de cima */
+  margin-top: -8px;
   margin-bottom: 8px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
@@ -427,11 +425,11 @@
 .detail-text-p { margin: 0; }
 .detailLabel { color: #007bff; font-weight: 600; margin-right: 5px; }
 
-/* Cores de Status no Texto */
+
 .statusOn { color: #28a745; font-weight: bold; }
 .statusOff { color: #dc3545; font-weight: bold; }
 
-/* --- Paginação --- */
+
 .paginationControls {
   margin-top: 20px;
   margin-bottom: 40px;
@@ -449,9 +447,7 @@
 .nav-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 .pageInfo { font-size: 1rem; color: #555; font-weight: 500; }
 
-/* =======================================================
-   MODAL DE CONFIRMAÇÃO / EDIÇÃO
-   ======================================================= */
+
 .modalBackdrop {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -467,7 +463,7 @@
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  max-width: 700px; /* <--- AJUSTADO DE 450px PARA 700px */
+  max-width: 700px;
   width: 90%;
   animation: fadeIn 0.2s ease-out;
 }
@@ -491,7 +487,7 @@
   gap: 10px;
 }
 
-/* Botão de Cancelar (Cinza) */
+
 .btnCancel {
   background-color: #6c757d;
   color: white;
@@ -499,9 +495,9 @@
 }
 .btnCancel:hover { background-color: #5a6268; }
 
-/* ⭐️ CORREÇÃO: Botão de Confirmação Perigosa no Modal (VERMELHO) */
+
 .btnDanger {
-  background-color: #dc3545; /* Vermelho */
+  background-color: #dc3545;
   color: white;
   border: none;
 }
@@ -512,9 +508,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* =======================================================
-   MENSAGENS E FEEDBACK
-   ======================================================= */
+
 .alertMessage {
   padding: 15px 20px;
   margin-bottom: 20px;
@@ -536,7 +530,7 @@
   font-size: 16px; background-color: #fff; border-radius: 8px; margin-top: 20px;
 }
 
-/* --- ESTILOS DE PEDIDOS (MANTIDOS ORIGINAIS) --- */
+
 
 .formCard select:focus {
     z-index: 10;
@@ -649,7 +643,7 @@
     color: #ccc;
 }
 
-/* Media Querys restantes */
+
 @media (max-width: 768px) {
   .main-content {
     padding: 15px;
@@ -694,24 +688,21 @@
   }
 }
 
-/* Adicione esta regra ao seu arquivo Loja.module.css */
-/* Garante que o campo ocupe 1/3 do espaço (menos a margem/gap) */
+
 .fieldGroupThird {
-    flex: 1 1 calc(33.333% - 10px); /* Garante que todos tenham a mesma largura, descontando um espaço */
-    min-width: 100px; /* Evita que o campo fique muito estreito em telas pequenas */
+    flex: 1 1 calc(33.333% - 10px);
+    min-width: 100px;
 }
 
-/* Regra geral importante para o layout do modal: */
-/* Certifique-se de que .row tem um gap ou margens para separar os itens */
+
 .row {
     display: flex;
-    gap: 20px; /* Adiciona espaço entre os itens */
+    gap: 20px;
     margin-bottom: 15px;
 }
 
-/* Para o input específico dentro do modal: */
 .inputModal {
-    width: 100%; /* Isso garante que o input preencha seu fieldGroup pai */
-    box-sizing: border-box; /* Garante que padding e border não aumentem a largura total */
+    width: 100%;
+    box-sizing: border-box;
 }
 

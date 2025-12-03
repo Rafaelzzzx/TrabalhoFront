@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import withAuth from '../../components/withAuth';
-import styles from '../../styles/Loja.module.css'; // Usando o mesmo arquivo CSS
+import styles from '../../styles/Geral.module.css';
 import api from '../../services/api';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox,
   FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight, FiEdit, FiShoppingBag, FiTag
 } from 'react-icons/fi';
 
-// --- NOVO COMPONENTE: MODAL DE EDIÇÃO PARA LOGISTAS ---
 
 const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
-    // Mapeia os nomes das propriedades do backend (ex: contact_email) para o formulário
+
     const initialFormData = {
         store_name: logista.store_name || '',
         cnpj: logista.cnpj || '',
         responsavel: logista.responsavel || '',
-        contact_email: logista.contact_email || '', // Email de login
-        address: logista.address || '', // Rua/Avenida
+        contact_email: logista.contact_email || '',
+        address: logista.address || '',
         cidade: logista.cidade || '',
         estado: logista.estado || '',
         phone_number: logista.phone_number || '',
@@ -26,7 +25,7 @@ const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
 
     const [formData, setFormData] = useState(initialFormData);
 
-    // Garante que o estado interno do formulário é resetado se o 'logista' mudar
+
     useEffect(() => {
         setFormData(initialFormData);
     }, [logista]);
@@ -38,8 +37,7 @@ const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // A função onSave será responsável por chamar a API PUT
-        onSave({ ...formData, _id: logista._id }); // Inclui o ID para a função de salvamento
+        onSave({ ...formData, _id: logista._id });
     };
 
     return (
@@ -49,7 +47,7 @@ const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
 
                 <form onSubmit={handleSubmit}>
 
-                    {/* Linha 1: Nome e CNPJ */}
+
                     <div className={styles.row}>
                         <div className={styles.fieldGroup}>
                             <label>Nome da Loja</label>
@@ -61,7 +59,7 @@ const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
                         </div>
                     </div>
 
-                    {/* Linha 2: Responsável e Email (Email não deve ser alterado) */}
+
                     <div className={styles.row}>
                         <div className={styles.fieldGroup}>
                             <label>Responsável</label>
@@ -73,7 +71,7 @@ const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
                         </div>
                     </div>
 
-                    {/* Linha 3: Telefone */}
+
                     <div className={styles.row}>
                          <div className={styles.fieldGroup}>
                             <label>Telefone</label>
@@ -81,10 +79,10 @@ const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
                         </div>
                     </div>
 
-                    {/* Linha 4: Endereço (3 colunas) */}
+
                     <h4 className={styles.sectionTitle} style={{ marginTop: '15px' }}>Endereço</h4>
                     <div className={styles.row}>
-                        {/* Se o seu CSS usa fieldGroup, ele deve ter flex: 1 para dividir o espaço */}
+
                         <div className={styles.fieldGroup}>
                             <label>Rua/Avenida</label>
                             <input type="text" name="address" value={formData.address || ''} onChange={handleChange} className={styles.inputModal} />
@@ -99,7 +97,7 @@ const EditLogistaModal = ({ logista, onSave, onCancel, loading }) => {
                         </div>
                     </div>
 
-                    {/* Status */}
+
                     <h4 className={styles.sectionTitle} style={{ marginTop: '15px' }}>Status</h4>
                      <div className={styles.row}>
                         <div className={styles.fieldGroup}>
@@ -148,14 +146,14 @@ const BuscaLogistas = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  // Estados para UI/Feedback
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [message, setMessage] = useState(null);
   const [currentAction, setCurrentAction] = useState('deactivate');
 
-  // ⭐️ NOVO ESTADO PARA EDIÇÃO
+
   const [editingLogista, setEditingLogista] = useState(null);
 
   // Paginação
@@ -174,10 +172,10 @@ const BuscaLogistas = () => {
     setMessage(null);
     setCurrentIndex(0);
     setExpandedId(null);
-    setEditingLogista(null); // Fecha o modal de edição ao buscar
+    setEditingLogista(null);
 
     try {
-      // ✅ Corrigido: Adicionar o parâmetro de busca para forçar o backend a incluir todos os status
+
       const response = await api.get('/api/lojas?status=all');
       let dados = response.data;
 
@@ -194,36 +192,35 @@ const BuscaLogistas = () => {
     }
   };
 
-  // ⭐️ Iniciar a Edição
   const startEdit = (logista) => {
     setMessage(null);
     setEditingLogista(logista);
   };
 
-  // ⭐️ Cancelar a Edição
+
   const cancelEdit = () => {
     setEditingLogista(null);
   };
 
-  // ⭐️ Submissão da Atualização (PUT)
+
   const handleUpdateSubmit = async (updatedData) => {
     setLoading(true);
     setMessage(null);
     const id = updatedData._id;
 
-    // Remove o ID do corpo da requisição e prepara o PUT
+
     const { _id, ...dataToSend } = updatedData;
 
     try {
-        // Rota de atualização (PUT)
+
         await api.put(`/api/lojas/${id}`, dataToSend);
 
-        // Atualiza o estado da lista no frontend com os novos dados
+
         setLogistas(oldList => oldList.map(item =>
             item._id === id ? { ...item, ...dataToSend } : item
         ));
 
-        setEditingLogista(null); // Fecha o modal
+        setEditingLogista(null);
         setMessage({ type: 'success', text: "Logista atualizado com sucesso!" });
 
     } catch (error) {
@@ -236,14 +233,14 @@ const BuscaLogistas = () => {
   };
 
 
-  // ✅ NOVO: Substitui startDelete e lida com os dois tipos de ação
+
   const startAction = (id, type) => {
     setDeleteId(id);
     setCurrentAction(type); // Define a ação que será executada
     setShowConfirm(true);
   };
 
-  // ✅ NOVO: Função refatorada para lidar com desativação (PUT) ou exclusão definitiva (DELETE)
+
   const handleConfirmAction = async () => {
     if (!deleteId) return;
     setShowConfirm(false);
@@ -252,13 +249,12 @@ const BuscaLogistas = () => {
 
     try {
       if (currentAction === 'delete') {
-        // Lógica para EXCLUSÃO PERMANENTE (DELETE)
+
         await api.delete(`/api/lojas/${deleteId}`);
         setLogistas(oldList => oldList.filter(item => item._id !== deleteId));
         setMessage({ type: 'success', text: "Logista excluído permanentemente com sucesso!" });
 
       } else {
-        // Lógica para DESATIVAÇÃO (PUT para status: 'off')
         await api.put(`/api/lojas/${deleteId}`, { status: 'off' });
 
         setLogistas(oldList => oldList.map(item =>
@@ -277,14 +273,14 @@ const BuscaLogistas = () => {
     } finally {
       setLoading(false);
       setDeleteId(null);
-      setCurrentAction('deactivate'); // Reseta a ação para o padrão
+      setCurrentAction('deactivate');
     }
   };
 
   const cancelDelete = () => {
     setDeleteId(null);
     setShowConfirm(false);
-    setCurrentAction('deactivate'); // Reseta a ação
+    setCurrentAction('deactivate');
   };
 
   const nextSlide = () => {
@@ -305,7 +301,7 @@ const BuscaLogistas = () => {
   const totalPages = Math.ceil(logistas.length / itemsPerPage);
   const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
 
-  // --- Modal de Confirmação (Limpo e usando classes) ---
+
   const ConfirmationModal = () => {
     const isDelete = currentAction === 'delete';
     const title = isDelete ? 'Confirmação de Exclusão' : 'Confirmação de Desativação';
@@ -324,7 +320,7 @@ const BuscaLogistas = () => {
             </button>
             <button
               className={`${styles.submitButton} ${styles.btnDanger}`}
-              onClick={handleConfirmAction} // Chamando a função refatorada
+              onClick={handleConfirmAction}
               disabled={loading}
             >
               {loading ? 'Processando...' : `Confirmar ${isDelete ? 'Exclusão' : 'Desativação'}`}
@@ -335,7 +331,7 @@ const BuscaLogistas = () => {
     );
   };
 
-  // --- Detalhes Expandidos (Limpo) ---
+
   const ExpandedDetailsRow = ({ item }) => (
     <div className={styles['expanded-details-row']}>
       <div className={styles['detail-full-span']}>
@@ -416,7 +412,7 @@ const BuscaLogistas = () => {
                 const isExpanded = expandedId === item._id;
                 const isDeactivated = item.status === 'off';
 
-                // Classes dinâmicas baseadas no CSS Module
+
                 let itemClasses = styles['provider-list-item'];
                 if (isExpanded) itemClasses += ` ${styles['item-expanded']}`;
                 if (isDeactivated) itemClasses += ` ${styles['item-status-off']}`;
@@ -441,7 +437,7 @@ const BuscaLogistas = () => {
                       </div>
                       <div className={styles['item-actions']}>
 
-                        {/* 1. Botão de Expandir/Detalhes */}
+
                         <button
                           className={`${styles['btn-detail']} ${isExpanded ? styles['btn-rotated'] : ''}`}
                           title={isExpanded ? "Esconder Detalhes" : "Ver Detalhes"}
@@ -453,7 +449,7 @@ const BuscaLogistas = () => {
                           <FiArrowRight size={20} />
                         </button>
 
-                        {/* 2. ⭐️ NOVO: Botão de Editar */}
+
                         <button
                             className={styles['btn-edit']}
                             onClick={(e) => {
@@ -466,16 +462,16 @@ const BuscaLogistas = () => {
                             <FiEdit size={18} />
                         </button>
 
-                        {/* 3. Botão de Excluir/Desativar */}
+
                         <button
                           className={styles['btn-delete']}
                           onClick={(e) => {
                             e.stopPropagation();
-                            // ✅ CORRIGIDO: Agora chama a função startAction
+
                             if (isDeactivated) {
-                              startAction(item._id, 'delete'); // Exclusão definitiva
+                              startAction(item._id, 'delete');
                             } else {
-                              startAction(item._id, 'deactivate'); // Desativação
+                              startAction(item._id, 'deactivate');
                             }
                           }}
                           title={isDeactivated ? "Excluir Permanentemente" : "Desativar Lojista"}
@@ -511,7 +507,7 @@ const BuscaLogistas = () => {
 
       {showConfirm && <ConfirmationModal />}
 
-      {/* ⭐️ Renderiza o Modal de Edição se houver um lojista selecionado */}
+
       {editingLogista && (
           <EditLogistaModal
               logista={editingLogista}
@@ -526,11 +522,11 @@ const BuscaLogistas = () => {
 
 
 // ============================================================================
-// COMPONENTE PRINCIPAL: CadastroLogista (inalterado)
+// COMPONENTE PRINCIPAL: CadastroLogista
 // ============================================================================
 function CadastroLogista() {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null); // Adicionado estado de mensagem unificado
+  const [message, setMessage] = useState(null);
 
   const [formData, setFormData] = useState({
     nomeLoja: '', cnpj: '', responsavel: '', email: '',
@@ -554,8 +550,8 @@ function CadastroLogista() {
       contact_email: formData.email,
       address: formData.rua,
       phone_number: formData.telefone,
-      cidade: formData.cidade, // Garantindo que cidade vá se existir no backend
-      estado: formData.estado, // Garantindo que estado vá se existir no backend
+      cidade: formData.cidade,
+      estado: formData.estado,
       pwd: formData.gerarAutomaticamente ? null : formData.senhaManual,
       responsavel: formData.responsavel
     };
@@ -563,7 +559,7 @@ function CadastroLogista() {
     try {
       const response = await api.post('/api/lojas/cadastroLoja', dadosFinaisParaBackend);
 
-      const successText = `✅ Sucesso! Loja cadastrada.\n\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.senhaUsada}`;
+      const successText = `Sucesso! Loja cadastrada.\n\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.senhaUsada}`;
       setMessage({ type: 'success', text: successText });
 
       setFormData({
@@ -574,7 +570,7 @@ function CadastroLogista() {
     } catch (error) {
       console.error("Erro ao cadastrar Logista:", error);
       const errorMessage = error.response?.data?.erro || (error.response?.data?.erros && error.response.data.erros.join('\n')) || "Erro interno.";
-      setMessage({ type: 'error', text: `❌ Erro: ${errorMessage}` });
+      setMessage({ type: 'error', text: ` Erro: ${errorMessage}` });
     } finally {
       setLoading(false);
     }
@@ -583,7 +579,7 @@ function CadastroLogista() {
   return (
     <div className={styles['dashboard-container']}>
 
-      {/* --- SIDEBAR --- */}
+
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
@@ -679,7 +675,7 @@ function CadastroLogista() {
           </div>
         </form>
 
-        {/* Divisória e Componente de Busca */}
+
         <hr className={styles.divider} />
         <BuscaLogistas />
 

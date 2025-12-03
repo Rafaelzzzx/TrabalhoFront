@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-// Certifique-se que o caminho do CSS está correto
+
 import styles from '../styles/lojas.module.css';
 import api from '../services/api';
 
@@ -10,10 +10,10 @@ import {
 } from 'react-icons/fi';
 
 const Loja = () => {
-  // Controle de Visualização (Dashboard ou Fornecedores)
+
   const [activeView, setActiveView] = useState('dashboard');
 
-  // --- LÓGICA DO DASHBOARD ---
+
   const [dashboardData, setDashboardData] = useState({
     totalRealizados: 0,
     valorTotal: 0,
@@ -42,16 +42,16 @@ const Loja = () => {
     fetchDashboard();
   }, []);
 
-  // --- LÓGICA DE FORNECEDORES ---
+
   const [fornecedores, setFornecedores] = useState([]);
   const [loadingForn, setLoadingForn] = useState(false);
 
-  // Filtros
+
   const [buscaId, setBuscaId] = useState('');
   const [buscaNome, setBuscaNome] = useState('');
   const [buscaEmail, setBuscaEmail] = useState('');
 
-  // Paginação Fornecedores
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -59,7 +59,7 @@ const Loja = () => {
     setLoadingForn(true);
     setCurrentPage(1);
     try {
-      // Supondo rota que retorna todos. Se sua API filtra, mude aqui.
+
       const response = await api.get('/cadastroFornecedor');
       let dados = response.data || [];
 
@@ -87,13 +87,13 @@ const Loja = () => {
     }
   };
 
-  // Cálculos de Paginação
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentFornecedores = fornecedores.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(fornecedores.length / itemsPerPage);
 
-  // --- COMPONENTES INTERNOS DE RENDERIZAÇÃO ---
+
 
   const renderDashboard = () => (
     <>
@@ -105,7 +105,7 @@ const Loja = () => {
         </div>
       </header>
 
-      {/* Cards */}
+
       <section className={styles['dashboard-cards']}>
         <div className={styles.card}>
           <h3>Pedidos Realizados</h3>
@@ -123,7 +123,7 @@ const Loja = () => {
         </div>
       </section>
 
-      {/* Tabela de Pedidos Recentes */}
+
       <section className={styles['orders-table-section']}>
         <h2>Últimos Pedidos</h2>
         <table className={styles['orders-table']}>
@@ -158,7 +158,7 @@ const Loja = () => {
         <h1>FORNECEDORES</h1>
       </header>
 
-      {/* Área de Busca (Usando classes search-section do CSS) */}
+
       <div className={styles['search-section']}>
         <h3 className={styles['search-header']}>Filtrar Fornecedores</h3>
 
@@ -197,11 +197,11 @@ const Loja = () => {
         </div>
       </div>
 
-      {/* Lista / Grid de Resultados */}
+
       {fornecedores.length > 0 && (
         <div className={styles['provider-list-container']}>
 
-          {/* Cabeçalho da Lista */}
+
           <div className={styles['provider-list-header']}>
             <div className={styles['header-cell']}>NOME</div>
             <div className={styles['header-cell']}>ID</div>
@@ -210,7 +210,7 @@ const Loja = () => {
             <div className={styles['header-cell-actions']}>AÇÕES</div>
           </div>
 
-          {/* Itens */}
+
           {currentFornecedores.map((item) => (
             <div key={item._id} className={styles['provider-list-item']}>
               <div className={`${styles['detail-cell']} ${styles['detail-cell-name']}`}>
@@ -241,7 +241,7 @@ const Loja = () => {
             </div>
           ))}
 
-          {/* Paginação */}
+
           <div className={styles.paginationControls}>
             <button
               className={styles['nav-btn']}
@@ -273,11 +273,11 @@ const Loja = () => {
     </>
   );
 
-  // --- RENDERIZAÇÃO PRINCIPAL ---
+
   return (
     <div className={styles['dashboard-container']}>
 
-      {/* Sidebar */}
+
       <nav className={styles.sidebar}>
         <ul>
           <li
@@ -298,7 +298,7 @@ const Loja = () => {
             </div>
           </li>
 
-          {/* Links externos mantidos como Link, ou você pode converter para abas também */}
+
           <li>
             <Link href="/admin/pedidos" className={styles.linkReset}>
               <div className={styles.menuItem}>
@@ -325,7 +325,7 @@ const Loja = () => {
         </ul>
       </nav>
 
-      {/* Conteúdo Principal Dinâmico */}
+
       <main className={styles['main-content']}>
         {activeView === 'dashboard' && renderDashboard()}
         {activeView === 'fornecedores' && renderFornecedores()}

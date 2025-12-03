@@ -21,10 +21,10 @@ export default function LoginAdmin() {
         level: "admin"
       });
 
-      // Salva o usuário no localStorage
+
       localStorage.setItem("usuario", JSON.stringify(response.data));
 
-      // Redireciona para dashboard
+
       router.push('/admin/Dashboard');
 
     } catch (err) {

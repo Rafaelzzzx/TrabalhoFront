@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import withAuth from '../../components/withAuth';
 import styles from '../../styles/Pedido.module.css';
 import api from '../../services/api';
 import {
@@ -521,7 +522,7 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
 // ============================================================================
 // 4. COMPONENTE PRINCIPAL: CadastroPedido
 // ============================================================================
-const CadastroPedido = () => {
+function CadastroPedido (){
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [message, setMessage] = useState(null);
@@ -760,12 +761,12 @@ const CadastroPedido = () => {
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
-          <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastrar Fornecedores</span></div></Link></li>
-          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Lojistas</span></div></Link></li>
-          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
+          <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Fornecedores</span></div></Link></li>
+          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Lojistas</span></div></Link></li>
+          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Produtos</span></div></Link></li>
           <li className={styles.active}><Link href="/admin/CadastroPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiShoppingBag size={20} /><span>Pedidos</span></div></Link></li>
           <li><Link href="/admin/CadastroCampanha" className={styles.linkReset}><div className={styles.menuItem}><FiTag size={20} /><span>Campanhas</span></div></Link></li>
-          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
+       {/*   <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li> */}
           <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
         </ul>
       </nav>
@@ -906,4 +907,4 @@ const CadastroPedido = () => {
   );
 };
 
-export default CadastroPedido;
+export default withAuth (CadastroPedido);

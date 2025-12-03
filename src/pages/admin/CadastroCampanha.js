@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-// Importa o CSS fornecido (Loja.module.css)
+import withAuth from '../../components/withAuth';
 import styles from '../../styles/Loja.module.css';
 import api from '../../services/api';
 
@@ -22,9 +22,6 @@ import {
   FiTag
 } from 'react-icons/fi';
 
-// =========================================================================
-// ⭐️ COMPONENTE AUXILIAR 1: Modal de Edição de Campanha
-// =========================================================================
 const EditCampanhaModal = ({ campanha, onSave, onCancel, loading }) => {
     const initialFormData = {
         name: campanha.name || '',
@@ -111,9 +108,7 @@ const EditCampanhaModal = ({ campanha, onSave, onCancel, loading }) => {
     );
 };
 
-// =========================================================================
-// ⭐️ COMPONENTE AUXILIAR 2: BuscaCampanhas (Busca e Listagem)
-// =========================================================================
+
 const BuscaCampanhas = () => {
     // Estados da Busca
     const [searchId, setSearchId] = useState('');
@@ -383,10 +378,8 @@ const BuscaCampanhas = () => {
     );
 };
 
-// =========================================================================
-// ⭐️ COMPONENTE PRINCIPAL: CadastroCampanha (Formulário + Busca)
-// =========================================================================
-export default function CadastroCampanha() {
+
+function CadastroCampanha() {
     const [form, setForm] = useState({ name: '', supplier_id: '', start_date: '', end_date: '', discount_percentage: '' });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
@@ -476,3 +469,5 @@ export default function CadastroCampanha() {
         </div>
     );
 }
+
+export default withAuth(CadastroCampanha);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import withAuth from '../../components/withAuth';
 import styles from '../../styles/Loja.module.css'; // Usando o mesmo arquivo CSS
 import api from '../../services/api';
 import {
@@ -527,7 +528,7 @@ const BuscaLogistas = () => {
 // ============================================================================
 // COMPONENTE PRINCIPAL: CadastroLogista (inalterado)
 // ============================================================================
-export default function CadastroLogista() {
+function CadastroLogista() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null); // Adicionado estado de mensagem unificado
 
@@ -686,3 +687,5 @@ export default function CadastroLogista() {
     </div>
   );
 }
+
+export default withAuth( CadastroLogista);

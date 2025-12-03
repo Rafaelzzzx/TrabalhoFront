@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-
 import api from '../../services/api';
-
 import styles from '../../styles/AdminLogin.module.css';
 
-export default function AdminLogin() {
+export default function LoginAdmin() {
   const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [erroLogin, setErroLogin] = useState(''); // Estado para mostrar erro na tela
+  const [erroLogin, setErroLogin] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErroLogin(''); // Limpa o erro anterior
+    setErroLogin("");
 
     try {
       const response = await api.post('/login', {
@@ -22,18 +21,26 @@ export default function AdminLogin() {
         level: "admin"
       });
 
-      const dados = response.data;
+      // Salva o usuário no localStorage
+      localStorage.setItem("usuario", JSON.stringify(response.data));
 
-      // Nota: Em ambientes de produção/seguros, use Cookies seguros (HTTP Only)
-      localStorage.setItem("usuario", JSON.stringify(dados));
-
-      // Redirecionamento para a rota /admin/dashboard
+      // Redireciona para dashboard
       router.push('/admin/Dashboard');
 
     } catch (err) {
-      console.error("Erro de Login:", err);
-      // alert("Credenciais inválidas!"); // SUBSTITUÍDO: Evitar alert()
-      setErroLogin("Credenciais inválidas. Verifique seu email e senha.");
+      console.error("Erro de Login:", err.response?.data || err);
+
+      if (err.response) {
+        if (err.response.status === 401) {
+          setErroLogin("Email ou senha incorretos.");
+          return;
+        }
+
+        setErroLogin(err.response.data?.erro || "Erro ao fazer login.");
+        return;
+      }
+
+      setErroLogin("Erro inesperado. Tente novamente.");
     }
   };
 
@@ -45,7 +52,7 @@ export default function AdminLogin() {
           LOGIN<br />ADMINISTRADOR
         </div>
 
-        <form onSubmit={handleLogin} style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <div className={styles.inputGroup}>
             <label>Email:</label>
             <input
@@ -68,7 +75,6 @@ export default function AdminLogin() {
             />
           </div>
 
-          {/* Exibe mensagem de erro se houver */}
           {erroLogin && <p className={styles.errorMessage}>{erroLogin}</p>}
 
           <button type="submit" className={styles.button}>

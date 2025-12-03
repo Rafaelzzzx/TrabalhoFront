@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import withAuth from '../../components/withAuth';
 import api from '../../services/api';
 import styles from '../../styles/Loja.module.css';
 import {
@@ -31,54 +32,51 @@ const EditFornecedorModal = ({ fornecedor, onSave, onCancel, loading }) => {
 
     return (
         <div className={styles.modalBackdrop}>
-            {/* O tamanho do modal é melhor controlado via CSS. Se precisar de 600px, defina no Loja.module.css para .modalContent */}
+
             <div className={styles.modalContent}>
                 <h3 className={styles.modalTitle}>Editar Fornecedor: {fornecedor.supplier_name}</h3>
 
                 <form onSubmit={handleSubmit}>
 
-                    {/* Linha 1: Nome e Categoria */}
+
                     <div className={styles.row}>
                         <div className={styles.fieldGroup}>
                             <label>Nome da Loja</label>
-                            {/* AJUSTE 2: Aplicação da classe inputModal */}
+
                             <input type="text" name="supplier_name" value={formData.supplier_name} onChange={handleChange} required className={styles.inputModal} />
                         </div>
                         <div className={styles.fieldGroup}>
                             <label>Categoria</label>
-                            {/* AJUSTE 2: Aplicação da classe inputModal */}
+
                             <input type="text" name="supplier_category" value={formData.supplier_category || ''} onChange={handleChange} className={styles.inputModal} />
                         </div>
                     </div>
 
-                    {/* Linha 2: Responsável e Email (Email não deve ser alterado) */}
+
                     <div className={styles.row}>
                         <div className={styles.fieldGroup}>
                             <label>Responsável</label>
-                            {/* AJUSTE 2: Aplicação da classe inputModal */}
+
                             <input type="text" name="responsavel" value={formData.responsavel || ''} onChange={handleChange} className={styles.inputModal} />
                         </div>
                         <div className={styles.fieldGroup}>
                             <label>Email (Login)</label>
-                            {/* AJUSTE 2: Aplicação da classe inputModal */}
+
                             <input type="email" name="contact_email" value={formData.contact_email} disabled className={styles.inputModal} />
                         </div>
                     </div>
 
-                    {/* Linha 3: Telefone */}
+
                     <div className={styles.row}>
                          <div className={styles.fieldGroup}>
                             <label>Telefone</label>
-                            {/* AJUSTE 2: Aplicação da classe inputModal */}
+
                             <input type="text" name="phone_number" value={formData.phone_number || ''} onChange={handleChange} className={styles.inputModal} />
                         </div>
                     </div>
 
-                    {/* Linha 4: Endereço - AQUI ESTAVA O PROBLEMA DE VAZAMENTO */}
+
                     <h4 className={styles.sectionTitle} style={{ marginTop: '15px' }}>Endereço</h4>
-                    {/* AQUI ESTÁ A CORREÇÃO: Usamos classes auxiliares (.fieldGroupThird) para garantir que
-                        os 3 campos de endereço se dividam em 3 colunas iguais, o que resolve o vazamento.
-                        Você precisará definir essa nova classe no seu CSS (veja as instruções acima). */}
                     <div className={styles.row}>
                         <div className={`${styles.fieldGroup} ${styles.fieldGroupThird}`}>
                             <label>Rua/Avenida</label>
@@ -530,7 +528,7 @@ const BuscaFornecedores = () => {
 
 // --- COMPONENTE CADASTROFORNECEDOR (Sem alterações significativas, exceto na importação) ---
 
-export default function CadastroFornecedor() {
+function CadastroFornecedor() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -568,7 +566,7 @@ export default function CadastroFornecedor() {
       });
     } catch (error) {
         const errorText = error.response?.data?.error || "Erro ao conectar com o servidor.";
-        setMessage({ type: 'error', text: `❌ Erro: ${errorText}` });
+        setMessage({ type: 'error', text: ` Erro: ${errorText}` });
     } finally {
       setLoading(false);
     }
@@ -674,3 +672,4 @@ export default function CadastroFornecedor() {
     </div>
   );
 }
+export default withAuth(CadastroFornecedor);

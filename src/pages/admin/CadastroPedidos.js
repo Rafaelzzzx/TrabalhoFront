@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-// Certifique-se de que este caminho está correto para o seu arquivo de CSS
 import styles from '../../styles/Pedido.module.css';
 import api from '../../services/api';
 import {
@@ -26,13 +25,11 @@ import {
 // ============================================================================
 const formatCurrency = (value) => {
   const n = Number(value) || 0;
-  // Garante a formatação para 2 casas decimais e usa vírgula como separador decimal
   return n.toFixed(2).replace('.', ',');
 };
 
 const parseCurrencyInput = (raw) => {
   if (raw === undefined || raw === null) return 0;
-  // Remove pontos (milhares) e substitui vírgula por ponto (decimal)
   const s = String(raw).replace(/\./g, '').replace(/,/g, '.');
   const num = parseFloat(s);
   return Number.isFinite(num) ? num : 0;
@@ -75,7 +72,6 @@ const EditPedidoModal = ({ pedido = {}, onSave, onCancel, loading }) => {
 
         <form onSubmit={handleSubmit}>
           <div className={styles.row}>
-
             <div className={styles.fieldGroup}>
               <label>Status do Pedido</label>
               <select name="status" value={formData.status || 'Pendente'} onChange={handleChange} required className={styles.inputModal}>
@@ -90,7 +86,6 @@ const EditPedidoModal = ({ pedido = {}, onSave, onCancel, loading }) => {
               <label>Data do Pedido</label>
               <input type="date" name="order_date" value={formData.order_date || ''} onChange={handleChange} required className={styles.inputModal} />
             </div>
-
           </div>
 
           <div className={styles.fieldGroup}>
@@ -163,7 +158,7 @@ const CustomProductDropdown = ({ options = [], value = '', onChange, placeholder
       </div>
 
       {isOpen && !disabled && (
-        <div className={styles.dropdownMenu} style={{ zIndex: 1000 }}>
+        <div className={styles.dropdownMenu}>
           {options.length > 0 ? (
             options.map(option => (
               <div
@@ -187,11 +182,13 @@ const CustomProductDropdown = ({ options = [], value = '', onChange, placeholder
   );
 };
 
+// ============================================================================
 // 3. COMPONENTE DE BUSCA E GERENCIAMENTO DE PEDIDOS
 // ============================================================================
 const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
   const [searchId, setSearchId] = useState('');
-  const [searchSupplierId, setSearchSupplierId] = useState('');
+  // Agora searchSupplierInput é usado para busca textual (Nome ou ID)
+  const [searchSupplierInput, setSearchSupplierInput] = useState('');
 
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -206,7 +203,6 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 5;
 
-  // ⭐ CORREÇÃO IMPORTANTE: converte ObjectId do Mongo corretamente
   const normalizeId = (id) => {
     if (!id) return '';
     if (typeof id === 'string') return id.trim();
@@ -214,7 +210,6 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
     return String(id).trim();
   };
 
-  // ✔ Agora funciona: sempre compara String limpa e equivalente
   const getSupplierName = (supplierId) => {
     const idPedido = normalizeId(supplierId);
     const supplier = allFornecedores.find(
@@ -233,7 +228,6 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
     setExpandedPedidoId((prev) => (prev === pedidoId ? null : pedidoId));
   };
 
-
   const handleSearch = async () => {
     setLoading(true);
     setSearched(true);
@@ -246,7 +240,7 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
       const response = await api.get('/api/pedidos');
       let dados = Array.isArray(response.data) ? response.data : [];
 
-      // ---------------- Filtro por ID parcial ----------------
+      // Filtro 1: ID do Pedido (Parcial)
       if (searchId.trim() !== '') {
         const searchIdLower = searchId.trim().toLowerCase();
         dados = dados.filter((p) =>
@@ -254,16 +248,24 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
         );
       }
 
-      // ---------------- Filtro por fornecedor ----------------
-      const fornecedorBusca = normalizeId(searchSupplierId);
+      // Filtro 2: Fornecedor (Nome ou ID - via Input Texto)
+      if (searchSupplierInput.trim() !== '') {
+        const term = searchSupplierInput.trim().toLowerCase();
 
-      if (fornecedorBusca !== '' && fornecedorBusca.length >= 6) {
-        dados = dados.filter(
-          (p) => normalizeId(p.supplier_id) === fornecedorBusca
-        );
+        // Encontra IDs dos fornecedores cujo nome bate com o termo pesquisado
+        const matchingSupplierIds = allFornecedores
+            .filter(f => f.supplier_name.toLowerCase().includes(term))
+            .map(f => normalizeId(f._id));
+
+        dados = dados.filter(p => {
+            const pedidoSupplierId = normalizeId(p.supplier_id);
+            // Verifica se o ID do pedido está na lista de nomes encontrados
+            // OU se o próprio ID do fornecedor no pedido contém o termo (busca por ID manual)
+            return matchingSupplierIds.includes(pedidoSupplierId) || pedidoSupplierId.toLowerCase().includes(term);
+        });
       }
 
-      // ---------------- Normalização dos pedidos ----------------
+      // Normalização dos dados
       dados = dados.map((p) => ({
         ...p,
         supplier_id: normalizeId(p.supplier_id),
@@ -295,18 +297,15 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
     setLoading(true);
     setMessage(null);
     const id = normalizeId(updatedData._id);
-
     const { _id, ...dataToSend } = updatedData;
 
     try {
       await api.put(`/api/pedidos/${id}`, dataToSend);
-
       setPedidos((oldList) =>
         oldList.map((item) =>
           normalizeId(item._id) === id ? { ...item, ...dataToSend } : item
         )
       );
-
       setEditingPedido(null);
       setMessage({
         type: 'success',
@@ -314,8 +313,7 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
       });
     } catch (error) {
       console.error('Erro ao atualizar pedido:', error);
-      const msg =
-        error.response?.data?.error || error.message || 'Erro desconhecido';
+      const msg = error.response?.data?.error || error.message || 'Erro desconhecido';
       setMessage({ type: 'error', text: `Erro ao atualizar: ${msg}` });
     } finally {
       setLoading(false);
@@ -340,11 +338,9 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
 
     try {
       await api.delete(`/api/pedidos/${deleteId}`);
-
       setPedidos((oldList) =>
         oldList.filter((item) => normalizeId(item._id) !== deleteId)
       );
-
       setMessage({
         type: 'success',
         text: 'Pedido deletado permanentemente!',
@@ -369,11 +365,7 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
     setCurrentIndex((prev) => Math.max(prev - itemsPerPage, 0));
   };
 
-  const visibleItems = pedidos.slice(
-    currentIndex,
-    currentIndex + itemsPerPage
-  );
-
+  const visibleItems = pedidos.slice(currentIndex, currentIndex + itemsPerPage);
   const totalPages = Math.max(1, Math.ceil(pedidos.length / itemsPerPage));
   const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
 
@@ -384,7 +376,6 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
         <p className={styles.modalText}>
           Tem certeza que deseja excluir permanentemente este pedido?
         </p>
-
         <div className={styles.modalActions}>
           <button className={`${styles.submitButton} ${styles.btnCancel}`} onClick={cancelAction}>
             Cancelar
@@ -403,25 +394,20 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
 
   return (
     <div className={styles['search-section']}>
-
       <h2 className={styles['search-header']}>Consultar / Gerenciar Pedidos</h2>
 
       {message && (
         <div className={`${styles.alertMessage} ${styles[message.type]}`}>
-          {String(message.text)
-            .split('\n')
-            .map((line, idx) => (
-              <p key={idx} className={styles.messageLine}>
-                {line}
-              </p>
-            ))}
+          {String(message.text).split('\n').map((line, idx) => (
+              <p key={idx} className={styles.messageLine}>{line}</p>
+          ))}
         </div>
       )}
 
-      {/* BUSCA */}
+      {/* --- ÁREA DE BUSCA ATUALIZADA (INPUTS IGUAIS AOS OUTROS) --- */}
       <div className={styles['search-inputs']}>
         <div className={styles['search-group']}>
-          <label>ID Pedido Parcial</label>
+          <label>ID Pedido</label>
           <input
             placeholder="Ex: 64b..."
             value={searchId}
@@ -429,30 +415,15 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
           />
         </div>
 
+        {/* ⭐️ ALTERADO: De <select> para <input> texto */}
         <div className={styles['search-group']}>
-          <label>Fornecedor</label>
-          <select
-            value={searchSupplierId}
-            onChange={(e) => {
-              const raw = e.target.value;
-
-              // evita "[object Object]" ou undefined como valor
-              if (!raw || raw === "undefined" || raw === "null" || raw === "[object Object]") {
-                setSearchSupplierId("");
-                return;
-              }
-
-              setSearchSupplierId(normalizeId(raw));
-            }}
-          >
-            <option value="">Todos os Fornecedores</option>
-
-            {allFornecedores.map((f) => (
-              <option key={normalizeId(f._id)} value={normalizeId(f._id)}>
-                {f.supplier_name}
-              </option>
-            ))}
-          </select>
+          <label>Fornecedor (Nome)</label>
+          <input
+            type="text"
+            placeholder="Ex: Fornecedor X..."
+            value={searchSupplierInput}
+            onChange={(e) => setSearchSupplierInput(e.target.value)}
+          />
         </div>
 
         <button
@@ -464,13 +435,10 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
         </button>
       </div>
 
-      {/* LISTA DE PEDIDOS */}
       {pedidos.length > 0 && (
         <>
           <div className={styles['provider-list-container']}>
-            <div
-              className={`${styles['provider-list-item']} ${styles['provider-list-header']}`}
-            >
+            <div className={`${styles['provider-list-item']} ${styles['provider-list-header']}`}>
               <div className={styles['header-cell']}>ID Pedido</div>
               <div className={styles['header-cell']}>Fornecedor</div>
               <div className={styles['header-cell']}>Total (R$)</div>
@@ -481,102 +449,42 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
             {visibleItems.map((pedido) => {
               const isExpanded = expandedPedidoId === pedido._id;
               const isCanceled = pedido.status === 'Cancelado';
-
               const itemClasses = [
                 styles['provider-list-item'],
                 isCanceled && styles['item-status-off'],
                 isExpanded && styles['item-expanded'],
-              ]
-                .filter(Boolean)
-                .join(' ');
+              ].filter(Boolean).join(' ');
 
               return (
                 <React.Fragment key={pedido._id}>
-                  <div
-                    className={itemClasses}
-                    onClick={() => toggleDetails(pedido._id)}
-                  >
-                    <div className={styles['detail-cell-name']}>
-                      #{pedido._id.substring(0, 8)}
-                    </div>
-
+                  <div className={itemClasses} onClick={() => toggleDetails(pedido._id)}>
+                    <div className={styles['detail-cell-name']}>#{pedido._id.substring(0, 8)}</div>
+                    <div className={styles['detail-cell']}>{getSupplierName(pedido.supplier_id)}</div>
+                    <div className={styles['detail-cell']}>R$ {formatCurrency(pedido.total_amount)}</div>
                     <div className={styles['detail-cell']}>
-                      {getSupplierName(pedido.supplier_id)}
+                      <span className={styles[`status-${pedido.status.toLowerCase()}`]}>{pedido.status}</span>
                     </div>
-
-                    <div className={styles['detail-cell']}>
-                      R$ {formatCurrency(pedido.total_amount)}
-                    </div>
-
-                    <div className={styles['detail-cell']}>
-                      <span className={styles[`status-${pedido.status.toLowerCase()}`]}>
-                        {pedido.status}
-                      </span>
-                    </div>
-
                     <div className={styles['item-actions']}>
-                      <button
-                        className={styles['btn-detail']}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleDetails(pedido._id);
-                        }}
-                      >
-                        <FiChevronDown
-                          size={20}
-                          className={isExpanded ? styles['btn-rotated'] : ''}
-                        />
+                      <button className={styles['btn-detail']} onClick={(e) => { e.stopPropagation(); toggleDetails(pedido._id); }}>
+                        <FiChevronDown size={20} className={isExpanded ? styles['btn-rotated'] : ''} />
                       </button>
-
-                      <button
-                        className={styles['btn-edit']}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          startEdit(pedido);
-                        }}
-                      >
+                      <button className={styles['btn-edit']} onClick={(e) => { e.stopPropagation(); startEdit(pedido); }}>
                         <FiEdit size={16} />
                       </button>
-
-                      <button
-                        className={styles['btn-delete']}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          startDelete(pedido._id);
-                        }}
-                      >
+                      <button className={styles['btn-delete']} onClick={(e) => { e.stopPropagation(); startDelete(pedido._id); }}>
                         <FiTrash2 size={16} />
                       </button>
                     </div>
                   </div>
 
-                  {/* DETALHES */}
                   {isExpanded && (
                     <div className={styles['expanded-details-row']}>
-                      <p>
-                        <strong>ID Completo:</strong> {pedido._id}
-                      </p>
-
-                      <p>
-                        <strong>Data:</strong>{' '}
-                        {pedido.order_date
-                          ? new Date(pedido.order_date).toLocaleDateString()
-                          : 'N/A'}
-                      </p>
-
+                      <p><strong>ID Completo:</strong> {pedido._id}</p>
+                      <p><strong>Data:</strong> {pedido.order_date ? new Date(pedido.order_date).toLocaleDateString() : 'N/A'}</p>
                       {pedido.items?.length > 0 && (
-                        <p>
-                          <strong>Status Produto:</strong>{' '}
-                          {getProductStatus(pedido.items[0].product_id) === 'on'
-                            ? 'Ativo'
-                            : 'Inativo'}
-                        </p>
+                        <p><strong>Status Produto:</strong> {getProductStatus(pedido.items[0].product_id) === 'on' ? 'Ativo' : 'Inativo'}</p>
                       )}
-
-                      <p>
-                        <strong>Observações:</strong>{' '}
-                        {pedido.notes || 'Nenhuma'}
-                      </p>
+                      <p><strong>Observações:</strong> {pedido.notes || 'Nenhuma'}</p>
                     </div>
                   )}
                 </React.Fragment>
@@ -584,54 +492,28 @@ const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
             })}
           </div>
 
-          {/* PAGINAÇÃO */}
           <div className={styles.paginationControls}>
-            <button
-              className={styles['nav-btn']}
-              onClick={prevSlide}
-              disabled={currentIndex === 0}
-            >
+            <button className={styles['nav-btn']} onClick={prevSlide} disabled={currentIndex === 0}>
               <FiChevronLeft size={20} />
             </button>
-
-            <span className={styles.pageInfo}>
-              Página {currentPage} de {totalPages}
-            </span>
-
-            <button
-              className={styles['nav-btn']}
-              onClick={nextSlide}
-              disabled={currentIndex + itemsPerPage >= pedidos.length}
-            >
+            <span className={styles.pageInfo}>Página {currentPage} de {totalPages}</span>
+            <button className={styles['nav-btn']} onClick={nextSlide} disabled={currentIndex + itemsPerPage >= pedidos.length}>
               <FiChevronRight size={20} />
             </button>
           </div>
         </>
       )}
 
-      {/* MENSAGENS */}
       {!loading && searched && pedidos.length === 0 && (
-        <p className={styles['no-data']}>
-          Nenhum pedido encontrado. Verifique os filtros.
-        </p>
+        <p className={styles['no-data']}>Nenhum pedido encontrado. Verifique os filtros.</p>
       )}
 
       {!loading && !searched && pedidos.length === 0 && (
-        <p className={styles['no-data']}>
-          Busque algo ou recarregue a página.
-        </p>
+        <p className={styles['no-data']}>Busque algo ou recarregue a página.</p>
       )}
 
       {showConfirm && <ConfirmationModal />}
-
-      {editingPedido && (
-        <EditPedidoModal
-          pedido={editingPedido}
-          onSave={handleUpdateSubmit}
-          onCancel={cancelEdit}
-          loading={loading}
-        />
-      )}
+      {editingPedido && <EditPedidoModal pedido={editingPedido} onSave={handleUpdateSubmit} onCancel={cancelEdit} loading={loading} />}
     </div>
   );
 };
@@ -646,7 +528,6 @@ const CadastroPedido = () => {
 
   const [fornecedores, setFornecedores] = useState([]);
   const [produtos, setProdutos] = useState([]);
-
   const [filteredProdutos, setFilteredProdutos] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -658,15 +539,16 @@ const CadastroPedido = () => {
 
   const [itensPedido, setItensPedido] = useState([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
 
+  // [CARREGAMENTO INICIAL]
   const loadInitialData = async () => {
     setLoadingData(true);
     setMessage(null);
 
     try {
-     
       const respFornecedores = await api.get('/api/fornecedores');
-      // Garante que os IDs sejam string e tratados com trim
-      const normalizedFornecedores = Array.isArray(respFornecedores.data) ? respFornecedores.data.map(f => ({ ...f, _id: String(f._id).trim() })) : [];
+      const normalizedFornecedores = Array.isArray(respFornecedores.data)
+        ? respFornecedores.data.map(f => ({ ...f, _id: String(f._id).trim() }))
+        : [];
       setFornecedores(normalizedFornecedores);
 
       const respProdutos = await api.get('/api/produtos');
@@ -675,7 +557,7 @@ const CadastroPedido = () => {
         supplier_id: String(p.supplier_id || '').trim(),
         _id: String(p._id).trim(),
         price: Number(p.price) || 0,
-        // Normaliza o status para 'on'/'off' em minúsculas
+        stock_quantity: Number(p.stock_quantity) || 0,
         status: String(p.status || 'off').toLowerCase()
       })) : [];
       setProdutos(normalizedProdutos);
@@ -691,11 +573,11 @@ const CadastroPedido = () => {
 
   useEffect(() => { loadInitialData(); }, []);
 
+  // [FILTRAGEM DE PRODUTOS NO FORMULÁRIO]
   useEffect(() => {
     const selectedSupplierId = String(formData.fornecedorId).trim();
 
     if (selectedSupplierId) {
-      // Filtra pelo supplier_id e exige status 'on' (ativo) para compra
       const produtosDoFornecedor = produtos.filter(p =>
         String(p.supplier_id).trim() === selectedSupplierId && String(p.status).toLowerCase() === 'on'
       );
@@ -722,20 +604,47 @@ const CadastroPedido = () => {
 
   const handleItemChange = useCallback((index, e, productsList = filteredProdutos) => {
     const { name, value } = e.target;
+
     setItensPedido(prevItens => {
       const novosItens = [...prevItens];
+      const itemAtual = novosItens[index];
 
       if (name === 'valorUnitario') {
-        const numericValue = parseCurrencyInput(value);
-        novosItens[index][name] = numericValue;
-      } else if (name === 'quantidade') {
-        novosItens[index][name] = parseInt(value, 10) || 1;
-      } else if (name === 'produtoId') {
+        return prevItens;
+      }
+
+      else if (name === 'quantidade') {
+        let novaQtd = parseInt(value, 10);
+        if (isNaN(novaQtd) || novaQtd < 1) novaQtd = 1;
+
+        if (itemAtual.produtoId) {
+          const produtoRef = productsList.find(p => String(p._id).trim() === String(itemAtual.produtoId).trim());
+          if (produtoRef) {
+            if (novaQtd > produtoRef.stock_quantity) {
+              alert(`Quantidade indisponível! Estoque atual: ${produtoRef.stock_quantity}`);
+              novaQtd = produtoRef.stock_quantity > 0 ? produtoRef.stock_quantity : 1;
+            }
+          }
+        }
+        novosItens[index][name] = novaQtd;
+      }
+
+      else if (name === 'produtoId') {
         const cleanedValue = String(value).trim();
         novosItens[index][name] = cleanedValue;
         const produtoSelecionado = productsList.find(p => String(p._id).trim() === cleanedValue);
+
         novosItens[index].valorUnitario = Number(produtoSelecionado?.price) || 0.00;
-      } else {
+
+        if (produtoSelecionado && produtoSelecionado.stock_quantity <= 0) {
+          alert("Este produto está sem estoque.");
+          novosItens[index].quantidade = 0;
+        } else {
+          novosItens[index].quantidade = 1;
+        }
+      }
+
+      else {
         novosItens[index][name] = value;
       }
 
@@ -760,10 +669,24 @@ const CadastroPedido = () => {
     return itensPedido.reduce((total, item) => total + ((Number(item.quantidade) || 0) * (Number(item.valorUnitario) || 0)), 0);
   };
 
+  const getProductStock = (prodId) => {
+    const p = filteredProdutos.find(x => String(x._id) === String(prodId));
+    return p ? p.stock_quantity : 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
+
+    for (const item of itensPedido) {
+      const prod = filteredProdutos.find(p => String(p._id) === String(item.produtoId));
+      if (prod && item.quantidade > prod.stock_quantity) {
+        setMessage({ type: 'error', text: `Erro: O produto "${prod.name}" tem apenas ${prod.stock_quantity} em estoque.` });
+        setLoading(false);
+        return;
+      }
+    }
 
     if (!formData.fornecedorId) {
       setMessage({ type: 'error', text: 'Selecione um Fornecedor.' });
@@ -772,14 +695,14 @@ const CadastroPedido = () => {
     }
 
     const itensValidos = itensPedido.map(i => ({
-        ...i,
-        quantidade: Number(i.quantidade) || 0,
-        valorUnitario: Number(i.valorUnitario) || 0
-      }))
-      .filter(item => item.produtoId && item.quantidade > 0 && item.valorUnitario >= 0);
+      ...i,
+      quantidade: Number(i.quantidade) || 0,
+      unit_price: Number(i.valorUnitario) || 0
+    }))
+    .filter(item => item.produtoId && item.quantidade > 0);
 
     if (itensValidos.length === 0) {
-      setMessage({ type: 'error', text: 'Adicione pelo menos um produto válido ao pedido (com produto selecionado e quantidade > 0).' });
+      setMessage({ type: 'error', text: 'Adicione pelo menos um produto válido ao pedido.' });
       setLoading(false);
       return;
     }
@@ -794,7 +717,7 @@ const CadastroPedido = () => {
       items: itensValidos.map(item => ({
         product_id: item.produtoId,
         quantity: item.quantidade,
-        unit_price: item.valorUnitario
+        unit_price: item.unit_price
       })),
       total_amount: totalCalculado
     };
@@ -819,10 +742,12 @@ const CadastroPedido = () => {
     return (
       <div className={styles['dashboard-container']}>
         <nav className={styles.sidebar}>
-          {/* Conteúdo do sidebar */}
+          <ul>
+            <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
+          </ul>
         </nav>
         <main className={styles['main-content']}>
-          <p className={styles.loadingMessage}>Carregando...</p>
+          <p>Carregando...</p>
         </main>
       </div>
     );
@@ -833,80 +758,17 @@ const CadastroPedido = () => {
   return (
     <div className={styles['dashboard-container']}>
       <nav className={styles.sidebar}>
-    <ul>
-        {/* 1. Dashboard */}
-        <li>
-            <Link href="/admin/Dashboard" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiGrid size={20} /><span>Dashboard</span>
-                </div>
-            </Link>
-        </li>
-
-        {/* 2. Cadastrar Fornecedores */}
-        <li>
-            <Link href="/admin/CadastroFornecedor" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiUsers size={20} /><span>Cadastrar Fornecedores</span>
-                </div>
-            </Link>
-        </li>
-
-        {/* 3. Cadastrar Lojistas */}
-        <li>
-            <Link href="/admin/CadastroLogista" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiBox size={20} /><span>Cadastrar Lojistas</span>
-                </div>
-            </Link>
-        </li>
-
-        {/* 4. Cadastrar Produtos */}
-        <li>
-            <Link href="/admin/CadastroProduto" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiPackage size={20} /><span>Cadastrar Produtos</span>
-                </div>
-            </Link>
-        </li>
-
-        {/* 5. Pedidos (ATIVO NESTA PÁGINA) */}
-        <li className={styles.active}>
-            <Link href="/admin/CadastroPedidos" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiShoppingBag size={20} /><span>Pedidos</span>
-                </div>
-            </Link>
-        </li>
-
-        {/* 6. Campanhas */}
-        <li>
-            <Link href="/admin/CadastroCampanha" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiTag size={20} /><span>Campanhas</span>
-                </div>
-            </Link>
-        </li>
-
-        {/* 7. Perfil */}
-        <li>
-            <Link href="/admin/perfil" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiUser size={20} /><span>Perfil</span>
-                </div>
-            </Link>
-        </li>
-
-        {/* 8. Sair */}
-        <li>
-            <Link href="/Login" className={styles.linkReset}>
-                <div className={styles.menuItem}>
-                    <FiLogOut size={20} /><span>Sair</span>
-                </div>
-            </Link>
-        </li>
-    </ul>
-</nav>
+        <ul>
+          <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
+          <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastrar Fornecedores</span></div></Link></li>
+          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Lojistas</span></div></Link></li>
+          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
+          <li className={styles.active}><Link href="/admin/CadastroPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiShoppingBag size={20} /><span>Pedidos</span></div></Link></li>
+          <li><Link href="/admin/CadastroCampanha" className={styles.linkReset}><div className={styles.menuItem}><FiTag size={20} /><span>Campanhas</span></div></Link></li>
+          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
+          <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
+        </ul>
+      </nav>
 
       <main className={styles['main-content']}>
         <header className={styles.header}><h1>Cadastrar Novo Pedido</h1></header>
@@ -947,7 +809,6 @@ const CadastroPedido = () => {
 
           {isProductSelectionDisabled && (<p className={`${styles.alertMessage} ${styles.info}`} style={{ marginBottom: 15 }}>⚠️ Selecione um <strong>Fornecedor</strong> acima para liberar a lista de produtos.</p>)}
 
-          {/* CABEÇALHO DO GRID */}
           <div className={styles.itemGridHeader}>
             <div className={styles.colProductHeader}>Produto</div>
             <div className={`${styles.colTinyHeader} ${styles.alignRight}`}>Qtd.</div>
@@ -956,28 +817,59 @@ const CadastroPedido = () => {
             <div className={styles.colRemoveButtonPlaceholder}></div>
           </div>
 
-          {/* LINHAS DO GRID */}
           {itensPedido.map((item, index) => (
             <div key={index} className={styles.itemGridRow}>
-              {/* COLUNA 1: PRODUTO (Dropdown) */}
+              {/* COLUNA 1: PRODUTO */}
               <div className={styles.colProductInput}>
-                <CustomProductDropdown options={filteredProdutos} value={item.produtoId} onChange={(e) => handleItemChange(index, e, filteredProdutos)} placeholder={isProductSelectionDisabled ? 'Fornecedor não selecionado' : 'Selecione um produto'} required index={index} disabled={isProductSelectionDisabled} />
+                <CustomProductDropdown
+                  options={filteredProdutos}
+                  value={item.produtoId}
+                  onChange={(e) => handleItemChange(index, e, filteredProdutos)}
+                  placeholder={isProductSelectionDisabled ? 'Fornecedor não selecionado' : 'Selecione um produto'}
+                  required
+                  index={index}
+                  disabled={isProductSelectionDisabled}
+                />
+                {item.produtoId && (
+                  <div className={styles.stockInfo}>
+                    Estoque disponível: <strong>{getProductStock(item.produtoId)}</strong>
+                  </div>
+                )}
               </div>
 
-              {/* COLUNA 2: QUANTIDADE (Input) */}
+              {/* COLUNA 2: QUANTIDADE */}
               <div className={styles.colTinyInput}>
-                <input type="number" name="quantidade" value={item.quantidade} onChange={(e) => handleItemChange(index, e, filteredProdutos)} min="1" className={styles.inputItem} required disabled={isProductSelectionDisabled} />
+                <input
+                  type="number"
+                  name="quantidade"
+                  value={item.quantidade}
+                  onChange={(e) => handleItemChange(index, e, filteredProdutos)}
+                  min="1"
+                  max={getProductStock(item.produtoId)}
+                  className={styles.inputItem}
+                  required
+                  disabled={!item.produtoId}
+                />
               </div>
 
-              {/* COLUNA 3: VALOR UNITÁRIO (Input) */}
+              {/* COLUNA 3: VALOR UNITÁRIO (TRAVADO) */}
               <div className={styles.colTinyInput}>
-                <input type="text" name="valorUnitario" value={formatCurrency(item.valorUnitario)} onChange={(e) => handleItemChange(index, e, filteredProdutos)} className={styles.inputItem} disabled={isProductSelectionDisabled} />
+                <input
+                  type="text"
+                  name="valorUnitario"
+                  value={formatCurrency(item.valorUnitario)}
+                  readOnly
+                  className={`${styles.inputItem} ${styles.inputReadOnly}`}
+                  tabIndex="-1"
+                />
               </div>
 
-              {/* COLUNA 4: TOTAL DO ITEM (Display) */}
-              <div className={styles.colTotalDisplay}><p className={styles.totalItem}>R$ {formatCurrency((Number(item.quantidade) || 0) * (Number(item.valorUnitario) || 0))}</p></div>
+              {/* COLUNA 4: TOTAL DO ITEM */}
+              <div className={styles.colTotalDisplay}>
+                <p className={styles.totalItem}>R$ {formatCurrency((Number(item.quantidade) || 0) * (Number(item.valorUnitario) || 0))}</p>
+              </div>
 
-              {/* COLUNA 5: BOTÃO DE REMOVER */}
+              {/* COLUNA 5: REMOVER */}
               <button type="button" className={styles.removeItemButton} onClick={() => handleRemoveItem(index)} disabled={itensPedido.length === 1 || isProductSelectionDisabled} title={itensPedido.length === 1 ? 'O pedido deve ter pelo menos um item' : 'Remover item'}>
                 <FiTrash2 size={16} />
               </button>
@@ -986,7 +878,6 @@ const CadastroPedido = () => {
 
           <div className={styles.addItemSection}>
             <button type="button" className={styles.addItemButton} onClick={handleAddItem} disabled={isProductSelectionDisabled || filteredProdutos.length === 0}><FiPlus size={16} /> Adicionar Novo Item</button>
-            {/* Aviso só aparece se o fornecedor for selecionado E a lista de produtos estiver vazia */}
             {filteredProdutos.length === 0 && formData.fornecedorId && (<p className={styles.noProductsMessage}>⚠️ Este fornecedor não possui produtos **ativos** cadastrados.</p>)}
           </div>
 

@@ -1,4 +1,4 @@
-/* Arquivo: src/styles/Pedidos.module.css */
+/* Arquivo: src/styles/Pedido.module.css */
 
 /* =======================================================
    CONFIGURAÇÃO GLOBAL E LAYOUT (Importado de Loja)
@@ -693,7 +693,7 @@
   align-items: center;
 }
 
-/* ⭐️ NOVO/AJUSTADO: Botão de Detalhes (Azul Escuro, sem fundo) */
+
 .btn-detail {
   background: transparent;
   border: none;
@@ -736,4 +736,87 @@
     color: #007bff; /* Azul de destaque */
     font-weight: 600;
     margin-right: 5px;
+}
+
+/* --- ADICIONE OU SUBSTITUA ISSO NO FINAL DO SEU ARQUIVO Pedido.module.css --- */
+.customDropdownContainer {
+    position: relative;
+    width: 100%;
+}
+
+
+.dropdownInput {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    min-height: 42px;
+}
+
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 5px;
+
+
+    max-height: 250px;
+    overflow-y: auto;
+
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.dropdownItem {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: #333;
+}
+
+.dropdownItem:last-child {
+    border-bottom: none;
+}
+
+.dropdownItem:hover {
+    background-color: #f1f8ff;
+    color: #0c2b4e;
+}
+
+
+.dropdownItem.selected {
+    background-color: #e6f7ff;
+    font-weight: bold;
+}
+
+/* Campo Somente Leitura (Valor Unitário) */
+.inputReadOnly {
+    background-color: #e9ecef;
+    color: #495057;
+    cursor: not-allowed;
+    font-weight: 600;
+    border: 1px solid #dee2e6;
+}
+
+/* Aviso de estoque visual */
+.stockInfo {
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+    text-align: right;
+}
+.stockError {
+    color: #dc3545;
+    font-weight: bold;
 }

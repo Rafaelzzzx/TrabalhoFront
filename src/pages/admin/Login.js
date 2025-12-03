@@ -28,7 +28,7 @@ export default function AdminLogin() {
       localStorage.setItem("usuario", JSON.stringify(dados));
 
       // Redirecionamento para a rota /admin/dashboard
-      router.push('/admin/dashboard');
+      router.push('/admin/Dashboard');
 
     } catch (err) {
       console.error("Erro de Login:", err);

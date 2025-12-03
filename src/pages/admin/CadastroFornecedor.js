@@ -580,12 +580,12 @@ export default function CadastroFornecedor() {
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
           <li className={styles.active}><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Fornecedores</span></div></Link></li>
-          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Logistas</span></div></Link></li>
+          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Lojistas</span></div></Link></li>
           <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Produtos</span></div></Link></li>
           <li><Link href="/admin/CadastroPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiShoppingBag size={20} /><span>Pedidos</span></div></Link></li>
           <li><Link href="/admin/CadastroCampanha" className={styles.linkReset}><div className={styles.menuItem}><FiTag size={20} /><span>Campanhas</span></div></Link></li>
-          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
-          <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
+      {/* <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li> */}
+          <li><Link href="/admin/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
         </ul>
       </nav>
 
@@ -606,12 +606,12 @@ export default function CadastroFornecedor() {
           <h2 className={styles.sectionTitle}>Dados do Fornecedor</h2>
 
           <div className={styles.fieldGroup}>
-            <label>Nome da loja <span className={styles.requiredAsterisk}>*</span></label>
+            <label>Nome do Fornecedor <span className={styles.requiredAsterisk}>*</span></label>
             <input type="text" name="supplier_name" className={styles.inputLong} value={formData.supplier_name} onChange={handleChange} required />
           </div>
 
           <div className={styles.fieldGroup}>
-            <label>Categoria da Loja <span className={styles.requiredAsterisk}>*</span></label>
+            <label>Categoria do fornecedor <span className={styles.requiredAsterisk}>*</span></label>
             <input type="text" name="supplier_category" className={styles.inputLong} placeholder="Ex: Eletrônicos..." value={formData.supplier_category} onChange={handleChange} required />
           </div>
 

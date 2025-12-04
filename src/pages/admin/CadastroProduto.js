@@ -1,15 +1,127 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import withAuth from '../../components/withAuth';
 import api from '../../services/api';
-import styles from '../../styles/Loja.module.css';
+import styles from '../../styles/Geral.module.css';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox,
-  FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight
+  FiSearch, FiArrowRight, FiTrash2, FiChevronLeft, FiChevronRight, FiEdit, FiShoppingBag, FiTag
 } from 'react-icons/fi';
 
-// ============================================================================
-// COMPONENTE AUXILIAR: BuscaProdutos (MODIFICADO PARA EXCLUSÃO EM DUAS ETAPAS)
-// ============================================================================
+
+const EditProdutoModal = ({ produto, onSave, onCancel, loading, setSearchMessage }) => {
+    const initialFormData = {
+        name: produto.name || '',
+        description: produto.description || '',
+        price: produto.price ? String(produto.price) : '',
+        stock_quantity: produto.stock_quantity ? String(produto.stock_quantity) : '',
+        supplier_id: produto.supplier_id || '',
+        category: produto.category || '',
+        status: produto.status || 'on'
+    };
+
+    const [formData, setFormData] = useState(initialFormData);
+
+    useEffect(() => {
+        setFormData(initialFormData);
+    }, [produto]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const parsedPrice = String(formData.price).replace(',', '.');
+        const finalPrice = parseFloat(parsedPrice);
+        const finalStock = formData.stock_quantity ? parseInt(formData.stock_quantity, 10) : 0;
+
+        if (isNaN(finalPrice) || isNaN(finalStock)) {
+             setSearchMessage({ type: 'error', text: "Erro de validação: Preço e Estoque devem ser números válidos." });
+             return;
+        }
+
+
+
+        const dataToSend = {
+            name: formData.name,
+            description: formData.description,
+            price: finalPrice,
+            stock_quantity: finalStock,
+            supplier_id: formData.supplier_id,
+            category: formData.category,
+            status: formData.status || 'on',
+            _id: produto._id
+        };
+
+        setSearchMessage(null);
+        onSave(dataToSend);
+    };
+
+    return (
+        <div className={styles.modalBackdrop}>
+            <div className={styles.modalContent} style={{ maxWidth: '700px' }}>
+                <h3 className={styles.modalTitle}>Editar Produto: {produto.name}</h3>
+
+                <form onSubmit={handleSubmit}>
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                            <label>Nome do Produto *</label>
+                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Categoria *</label>
+                            <input type="text" name="category" value={formData.category} onChange={handleChange} required className={styles.inputModal} />
+                        </div>
+                    </div>
+
+                    <div className={styles.fieldGroup}>
+                        <label>Descrição</label>
+                        <textarea name="description" value={formData.description || ''} onChange={handleChange} className={styles.inputModal}></textarea>
+                    </div>
+
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                            <label>Preço (R$) *</label>
+                            <input type="text" name="price" value={formData.price} onChange={handleChange} required className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Estoque (Qtd) *</label>
+                            <input type="text" name="stock_quantity" value={formData.stock_quantity} onChange={handleChange} required className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>ID do Fornecedor *</label>
+                            <input type="text" name="supplier_id" value={formData.supplier_id} onChange={handleChange} required className={styles.inputModal} />
+                        </div>
+                    </div>
+
+                    <div className={styles.row}>
+                         <div className={styles.fieldGroup}>
+                             <label>Status</label>
+                             <select name="status" value={formData.status || 'on'} onChange={handleChange} className={styles.inputModal}>
+                                 <option value="on">Ativo</option>
+                                 <option value="off">Inativo</option>
+                             </select>
+                         </div>
+                    </div>
+
+                    <div className={styles.modalActions}>
+                        <button className={`${styles.submitButton} ${styles.btnCancel}`} type="button" onClick={onCancel} disabled={loading}>
+                            Cancelar
+                        </button>
+                        <button className={styles.submitButton} type="submit" disabled={loading}>
+                            {loading ? 'Salvando...' : 'Salvar Alterações'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+
 const BuscaProdutos = ({ mainMessageSetter }) => {
     const [searchId, setSearchId] = useState('');
     const [searchName, setSearchName] = useState('');
@@ -21,10 +133,11 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
-    // [NOVO ESTADO]: Para diferenciar Desativação de Exclusão Definitiva
     const [actionType, setActionType] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
     const [searchMessage, setSearchMessage] = useState(null);
+
+    const [editingProduto, setEditingProduto] = useState(null);
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const itemsPerPage = 5;
@@ -39,6 +152,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
         setSearchMessage(null);
         setCurrentIndex(0);
         setExpandedId(null);
+        setEditingProduto(null);
 
         try {
             const response = await api.get('/api/produtos');
@@ -55,17 +169,45 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
         }
     };
 
-    // [REMOVIDO: startDelete] -> Substituído por startAction
-    // [REMOVIDO: confirmDelete] -> Substituído por confirmAction
+    const startEdit = (produto) => {
+        mainMessageSetter(null);
+        setSearchMessage(null);
+        setEditingProduto(produto);
+    };
 
-    // [NOVA FUNÇÃO]: Inicia a ação (Desativar ou Excluir)
+    const cancelEdit = () => {
+        setEditingProduto(null);
+        setSearchMessage(null);
+    };
+
+    const handleUpdateSubmit = async (updatedData) => {
+        setLoading(true);
+        setSearchMessage(null);
+        const id = updatedData._id;
+        const { _id, ...dataToSend } = updatedData;
+
+        try {
+            await api.put(`/api/produtos/${id}`, dataToSend);
+            setProdutos(oldList => oldList.map(item =>
+                item._id === id ? { ...item, ...dataToSend } : item
+            ));
+            setEditingProduto(null);
+            mainMessageSetter({ type: 'success', text: "Produto atualizado com sucesso!" });
+        } catch (error) {
+            console.error("Erro ao atualizar:", error);
+            const errorMessage = error.response?.data?.erro || error.response?.data?.error || "Erro desconhecido ao salvar.";
+            setSearchMessage({ type: 'error', text: `Erro ao atualizar produto: ${errorMessage}` });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const startAction = (id, type) => {
         setDeleteId(id);
-        setActionType(type); // 'deactivate' ou 'delete'
+        setActionType(type);
         setShowConfirm(true);
     };
 
-    // [NOVA FUNÇÃO]: Executa a ação confirmada
     const confirmAction = async () => {
         if (!deleteId || !actionType) return;
         setLoading(true);
@@ -74,25 +216,17 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
 
         try {
             if (actionType === 'deactivate') {
-                // AÇÃO 1: DESATIVAR (PUT)
                 await api.put(`/api/produtos/${deleteId}`, { status: 'off' });
-
                 setProdutos(list => list.map(item =>
                     item._id === deleteId ? { ...item, status: 'off' } : item
                 ));
                 mainMessageSetter({ type: 'success', text: `Produto desativado com sucesso! (ID: ${deleteId.substring(0, 10)}...)` });
-
             } else if (actionType === 'delete') {
-                // AÇÃO 2: DELETAR PERMANENTEMENTE (DELETE)
                 await api.delete(`/api/produtos/${deleteId}`);
-
-                // Remove o produto da lista no frontend
                 setProdutos(list => list.filter(item => item._id !== deleteId));
                 mainMessageSetter({ type: 'success', text: `Produto excluído permanentemente! (ID: ${deleteId.substring(0, 10)}...)` });
             }
-
             if (expandedId === deleteId) setExpandedId(null);
-
         } catch (error) {
             console.error(`Erro ao ${actionType}:`, error);
             const msg = error.response?.data?.error || "Erro de rede/servidor.";
@@ -100,18 +234,16 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
         } finally {
             setLoading(false);
             setDeleteId(null);
-            setActionType(null); // Limpa o tipo de ação
+            setActionType(null);
         }
     };
 
-    // [AJUSTADO]: Resetar o actionType
     const cancelDelete = () => {
         setDeleteId(null);
         setActionType(null);
         setShowConfirm(false);
     };
 
-    // --- Paginação ---
     const nextSlide = () => {
         if (currentIndex + itemsPerPage < produtos.length) {
             setCurrentIndex(currentIndex + itemsPerPage);
@@ -130,9 +262,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
     const totalPages = Math.ceil(produtos.length / itemsPerPage);
     const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
 
-    // --- Modal de Confirmação (AGORA DINÂMICO) ---
     const ConfirmationModal = () => {
-        // [AJUSTADO]: Conteúdo dinâmico com base no actionType
         const title = actionType === 'delete' ? 'Confirmação de Exclusão Permanente' : 'Confirmação de Desativação';
         const text = actionType === 'delete' ?
             'ATENÇÃO: Deseja realmente excluir este produto do banco de dados? Esta ação é irreversível.' :
@@ -146,7 +276,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
                     <p className={styles.modalText}>{text}</p>
                     <div className={styles.modalActions}>
                         <button className={`${styles.submitButton} ${styles.btnCancel}`} onClick={cancelDelete}>Cancelar</button>
-                        <button className={`${styles.submitButton} ${styles.btnDanger}`} onClick={confirmAction}>{/* [AJUSTADO] */}
+                        <button className={`${styles.submitButton} ${styles.btnDanger}`} onClick={confirmAction}>
                             {buttonText}
                         </button>
                     </div>
@@ -155,7 +285,6 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
         );
     };
 
-    // --- Detalhes Expandidos ---
     const ExpandedDetailsRow = ({ item }) => (
         <div className={styles['expanded-details-row']}>
             <div className={styles['detail-full-span']}>
@@ -178,7 +307,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
 
     return (
         <div className={styles['search-section']}>
-            <h2 className={styles['search-header']}>Consultar / Desativar Produtos</h2>
+            <h2 className={styles['search-header']}>Consultar / Gerenciar Produtos</h2>
 
             {searchMessage && <div className={`${styles.alertMessage} ${styles[searchMessage.type]}`}>{searchMessage.text}</div>}
 
@@ -204,7 +333,6 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
             {produtos.length > 0 && (
                 <>
                     <div className={styles['provider-list-container']}>
-                        {/* HEADER DA LISTA */}
                         <div className={`${styles['provider-list-item']} ${styles['provider-list-header']}`}>
                             <div className={styles['header-cell']}>Nome do Produto</div>
                             <div className={styles['header-cell']}>ID (Início)</div>
@@ -213,7 +341,6 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
                             <div className={styles['header-cell-actions']}>Ações</div>
                         </div>
 
-                        {/* ITENS DA LISTA */}
                         {visibleItems.map(item => {
                             const expanded = expandedId === item._id;
                             const isDeactivated = item.status === 'off';
@@ -228,6 +355,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
                                         <div className={styles['detail-cell']}><p>{item._id.substring(0, 10)}...</p></div>
                                         <div className={styles['detail-cell']}><p>{item.stock_quantity}</p></div>
                                         <div className={styles['detail-cell']}><p>{item.category || '-'}</p></div>
+
                                         <div className={styles['item-actions']}>
                                             <button
                                                 className={`${styles['btn-detail']} ${expanded ? styles['btn-rotated'] : ''}`}
@@ -236,21 +364,29 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
                                             >
                                                 <FiArrowRight size={20} />
                                             </button>
-
-                                            {/* [AJUSTADO]: LÓGICA DO BOTÃO DE EXCLUSÃO/DESATIVAÇÃO */}
+                                            <button
+                                                className={styles['btn-edit']}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    startEdit(item);
+                                                }}
+                                                title="Editar Produto"
+                                                disabled={loading}
+                                            >
+                                                <FiEdit size={18} />
+                                            </button>
                                             <button
                                                 className={styles['btn-delete']}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    // Determina a ação com base no status atual
                                                     if (isDeactivated) {
-                                                        startAction(item._id, 'delete'); // Exclusão definitiva
+                                                        startAction(item._id, 'delete');
                                                     } else {
-                                                        startAction(item._id, 'deactivate'); // Desativação
+                                                        startAction(item._id, 'deactivate');
                                                     }
                                                 }}
                                                 title={isDeactivated ? "Excluir Permanentemente" : "Desativar Produto"}
-                                                disabled={loading} // Não desabilita mais pelo status, só pelo loading
+                                                disabled={loading}
                                             >
                                                 <FiTrash2 size={18} />
                                             </button>
@@ -262,7 +398,6 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
                         })}
                     </div>
 
-                    {/* PAGINAÇÃO */}
                     <div className={styles.paginationControls}>
                         <button className={styles['nav-btn']} onClick={prevSlide} disabled={currentIndex === 0 || loading}>
                             <FiChevronLeft size={24} />
@@ -278,6 +413,16 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
             {searched && produtos.length === 0 && <p className={styles['no-data']}>Nenhum produto encontrado com os filtros especificados.</p>}
 
             {showConfirm && <ConfirmationModal />}
+
+            {editingProduto && (
+                <EditProdutoModal
+                    produto={editingProduto}
+                    onSave={handleUpdateSubmit}
+                    onCancel={cancelEdit}
+                    loading={loading}
+                    setSearchMessage={setSearchMessage}
+                />
+            )}
         </div>
     );
 };
@@ -285,7 +430,7 @@ const BuscaProdutos = ({ mainMessageSetter }) => {
 // ============================================================================
 // COMPONENTE PRINCIPAL: CadastroProdutos
 // ============================================================================
-export default function CadastroProdutos() {
+ function CadastroProdutos() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -302,6 +447,7 @@ export default function CadastroProdutos() {
     setLoading(true);
     setMessage(null);
 
+
     const dadosParaAPI = {
       nome: formData.nome,
       descricao: formData.descricao,
@@ -311,13 +457,20 @@ export default function CadastroProdutos() {
       categoria: formData.categoria
     };
 
+
+    if (isNaN(dadosParaAPI.preco) || isNaN(dadosParaAPI.estoque)) {
+        setMessage({ type: 'error', text: "Erro: Preço e Estoque devem ser números válidos." });
+        setLoading(false);
+        return;
+    }
+
     try {
       const response = await api.post('/api/produtos', dadosParaAPI);
       setMessage({ type: 'success', text: `Produto ${response.data.name} cadastrado com sucesso!` });
       setFormData({ nome: '', descricao: '', preco: '', estoque: '', fornecedor: '', categoria: '' });
     } catch (error) {
       console.error("Erro ao cadastrar:", error);
-      const msg = error.response?.data?.error || "Erro de rede/servidor.";
+      const msg = error.response?.data?.erro || error.response?.data?.detalhes || error.response?.data?.error || "Erro de rede/servidor.";
       setMessage({ type: 'error', text: `Erro ao cadastrar produto: ${msg}` });
     }
 
@@ -327,33 +480,33 @@ export default function CadastroProdutos() {
   return (
     <div className={styles["dashboard-container"]}>
 
-      {/* SIDEBAR */}
+
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
-          <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastrar Fornecedores</span></div></Link></li>
-          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Logistas</span></div></Link></li>
-          <li className={styles.active}><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
-          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
-          <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
+          <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Fornecedores</span></div></Link></li>
+          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Lojistas</span></div></Link></li>
+          <li className={styles.active}><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Produtos</span></div></Link></li>
+          <li><Link href="/admin/CadastroPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiShoppingBag size={20} /><span>Pedidos</span></div></Link></li>
+          <li><Link href="/admin/CadastroCampanha" className={styles.linkReset}><div className={styles.menuItem}><FiTag size={20} /><span>Campanhas</span></div></Link></li>
+        {/*  <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li> */}
+          <li><Link href="/admin/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
         </ul>
       </nav>
 
-      {/* MAIN CONTENT */}
+
       <main className={styles["main-content"]}>
 
         <header className={styles.header}>
           <h1>Gerenciamento de Produtos</h1>
         </header>
 
-        {/* FEEDBACK MENSAGEM */}
         {message && (
           <div className={`${styles.alertMessage} ${styles[message.type]}`}>
             <p>{message.text}</p>
           </div>
         )}
 
-        {/* 1. FORMULÁRIO DE CADASTRO (NOVO CADASTRO DE PRODUTO) - AGORA NO TOPO */}
         <h2 className={styles.sectionTitle}>Novo Cadastro de Produto</h2>
         <form className={styles.formCard} onSubmit={handleSubmit}>
 
@@ -399,9 +552,11 @@ export default function CadastroProdutos() {
 
         </form>
 
-        {/* 2. BUSCA E LISTAGEM DE PRODUTOS (CONSULTAR) - AGORA EMBAIXO */}
+        <hr className={styles.divider} />
         <BuscaProdutos mainMessageSetter={setMessage} />
       </main>
     </div>
   );
 }
+
+export default withAuth(CadastroProdutos);

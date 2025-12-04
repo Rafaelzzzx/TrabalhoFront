@@ -88,9 +88,7 @@
   border-top: 1px solid #ddd;
 }
 
-/* =======================================================
-   ESTILOS DE FORMULÁRIO (Card de Cadastro)
-   ======================================================= */
+
 .formCard {
   background-color: #ffffff;
   padding: 30px;
@@ -122,7 +120,8 @@
   font-weight: 600;
 }
 
-.fieldGroup input {
+.fieldGroup input,
+.fieldGroup select {
   padding: 12px 15px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -130,7 +129,8 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.fieldGroup input:focus {
+.fieldGroup input:focus,
+.fieldGroup select:focus {
   border-color: #0c2b4e;
   box-shadow: 0 0 0 3px rgba(12, 43, 78, 0.1);
   outline: none;
@@ -246,7 +246,7 @@
   width: 100%;
 }
 
-/* --- Botões Gerais --- */
+
 .btn-search {
   background-color: #0c2b4e;
   color: white;
@@ -267,8 +267,9 @@
 .btn-search:hover { background-color: #1a4a7d; transform: translateY(-2px); }
 .btn-search:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
 
+
 .submitButton {
-  background-color: #4CAF50;
+  background-color: #4CAF50; /* Verde */
   color: white;
   padding: 12px 30px;
   border: none;
@@ -282,10 +283,9 @@
 .submitButton:hover { background-color: #45a049; transform: translateY(-2px); }
 .submitButton:disabled { cursor: not-allowed; opacity: 0.5; transform: none; box-shadow: none; }
 
-/* --- Lista Grid (Cards) --- */
+
 .provider-list-container {
   margin-top: 20px;
-  /* max-height removido para deixar crescer naturalmente, ou mantenha se preferir scroll interno */
   padding: 0;
 }
 
@@ -487,8 +487,8 @@
 }
 .grid-style {
   display: grid;
-  /* 5 Colunas: Nome | ID | Email | Responsável | Ações */
-  grid-template-columns: 3fr 1.5fr 3fr 2fr 100px;
+
+  grid-template-columns: 3fr 1.5fr 3fr 2fr 130px;
   gap: 15px;
   align-items: center;
   padding: 10px 20px;
@@ -504,7 +504,7 @@
   border-radius: 8px;
 }
 
-/* Item quando está expandido */
+
 .item-expanded {
   background-color: #eaf5ff !important;
   margin-bottom: 0;
@@ -512,7 +512,7 @@
   border-bottom: none;
 }
 
-/* Item quando está desativado (off) */
+
 .item-status-off {
   background-color: #f0f0f0 !important;
   opacity: 0.8;
@@ -546,13 +546,29 @@
 }
 .detail-cell-name p { font-weight: bold; margin: 0; }
 
-/* Ações e Botões da Lista */
+
 .item-actions {
   display: flex;
   gap: 5px;
   justify-content: flex-end;
   align-items: center;
 }
+
+
+.btn-edit {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px;
+  min-width: 36px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-edit:hover { background: #0056b3; transform: scale(1.05); }
+.btn-edit:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+
 
 .btn-delete {
   background: #f44336;
@@ -579,14 +595,14 @@
 }
 .btn-detail:hover { color: #1a4a7d; }
 
-/* Classe para girar a seta */
+
 .btn-rotated {
   transform: rotate(90deg);
 }
 
-/* --- Detalhes Expandidos --- */
+
 .expanded-details-row {
-  grid-column: 1 / -1; /* Se estiver dentro de um grid pai */
+  grid-column: 1 / -1;
   padding: 12px 20px;
   background-color: #f1f8ff;
   border-top: 1px solid #ddd;
@@ -596,7 +612,7 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
   gap: 8px 15px;
-  margin-top: -8px; /* Cola no item de cima */
+  margin-top: -8px;
   margin-bottom: 8px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
@@ -605,11 +621,11 @@
 .detail-text-p { margin: 0; }
 .detailLabel { color: #007bff; font-weight: 600; margin-right: 5px; }
 
-/* Cores de Status no Texto */
+
 .statusOn { color: #28a745; font-weight: bold; }
 .statusOff { color: #dc3545; font-weight: bold; }
 
-/* --- Paginação --- */
+
 .paginationControls {
   margin-top: 20px;
   margin-bottom: 40px;
@@ -627,9 +643,7 @@
 .nav-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 .pageInfo { font-size: 1rem; color: #555; font-weight: 500; }
 
-/* =======================================================
-   MODAL DE CONFIRMAÇÃO (Estilos Adicionados)
-   ======================================================= */
+
 .modalBackdrop {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -645,7 +659,7 @@
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  max-width: 450px;
+  max-width: 700px;
   width: 90%;
   animation: fadeIn 0.2s ease-out;
 }
@@ -669,15 +683,17 @@
   gap: 10px;
 }
 
+
 .btnCancel {
-  background-color: #6c757d; /* Cinza */
+  background-color: #6c757d;
   color: white;
   border: none;
 }
 .btnCancel:hover { background-color: #5a6268; }
 
+
 .btnDanger {
-  background-color: #dc3545; /* Vermelho */
+  background-color: #dc3545;
   color: white;
   border: none;
 }
@@ -688,9 +704,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* =======================================================
-   MENSAGENS E FEEDBACK
-   ======================================================= */
+
 .alertMessage {
   padding: 15px 20px;
   margin-bottom: 20px;
@@ -712,434 +726,142 @@
   font-size: 16px; background-color: #fff; border-radius: 8px; margin-top: 20px;
 }
 
-/* --- LAYOUT GLOBAL E BASE --- */
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f4f7f6; /* Fundo levemente cinza do dashboard */
+
+
+.formCard select:focus {
+    z-index: 10;
 }
 
-/* --- SIDEBAR (Barra Lateral) --- */
-.sidebar {
-    width: 250px;
-    background-color: #0c2b4e; /* Azul Escuro */
-    color: white;
-    padding-top: 20px;
+.itemHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 0 0 8px 0;
+    border-bottom: 2px solid #e0e0e0;
+    font-weight: 700;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.headerColumn {
+    padding-right: 10px;
     flex-shrink: 0;
 }
 
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.linkReset {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
-
-.menuItem {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.menuItem:hover {
-    background-color: #1a4a7d;
-}
-
-.menuItem span {
-    margin-left: 10px;
-    font-weight: 500;
-}
-
-.active {
-    background-color: #1a4a7d;
-    border-left: 5px solid #007bff; /* Destaque azul do item ativo */
-}
-
-.active .menuItem {
-    padding-left: 15px; /* Ajusta o padding devido à borda */
-}
-
-
-/* --- CONTEÚDO PRINCIPAL --- */
-.main-content {
-    flex-grow: 1; /* Ocupa o espaço restante */
-    padding: 30px;
-}
-
-.header {
-    margin-bottom: 30px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-.header h1 {
-    font-size: 1.8rem;
-    color: #0c2b4e;
-    margin: 0;
-}
-
-
-/* --- CARDS DE MÉTRICAS (dashboard-cards) --- */
-.dashboard-cards {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 40px;
-    flex-wrap: wrap;
-}
-
-.card {
-    flex: 1;
-    min-width: 200px;
-    background-color: white;
-    padding: 20px 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    /* A cor da borda esquerda é definida inline no JSX para cada card */
-    border-left: 5px solid var(--card-color, #007bff);
-}
-
-.card h3 {
-    font-size: 1rem;
-    color: #6c757d;
-    margin: 0 0 5px 0;
-    font-weight: 400;
-}
-
-.card p {
-    font-size: 2.5rem;
-    color: #0c2b4e;
-    font-weight: 700;
-    margin: 0;
-}
-
-
-/* --- SEÇÕES DE TABELA (Últimos Cadastros) --- */
-.orders-table-section {
-    background-color: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    margin-top: 20px;
-}
-
-.orders-table-section h2 {
-    font-size: 1.4rem;
-    color: #0c2b4e;
-    margin: 0 0 20px 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-.orders-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-}
-
-.orders-table th {
-    background-color: #f8f9fa;
-    color: #0c2b4e;
-    padding: 12px 15px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.orders-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #eee;
-    color: #333;
-}
-
-.orders-table tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-/*para o pedidos */
-.main-content {
-  flex-grow: 1;
-  padding: 30px;
-}
-
-.header h1 {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 20px;
-  font-weight: 700;
-}
-
-.formCard {
-  background-color: #ffffff;
-  padding: 40px 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.sectionTitle {
-  font-size: 20px;
-  color: #333;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 10px;
-}
-
-.fieldGroup {
-  margin-bottom: 20px;
-}
-
-.requiredAsterisk {
-  color: #ff4d4f;
-  margin-left: 5px;
-}
-
-.fieldGroup label {
-  display: block;
-  font-weight: 600;
-  color: #595959;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.formCard input,
-.formCard select,
-.formCard textarea {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 15px;
-  box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.formCard input:focus,
-.formCard select:focus,
-.formCard textarea:focus {
-  border-color: #1890ff;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-}
-
-/* Tamanhos de Input */
-.inputLong { width: 100%; }
-.inputMedium { max-width: 300px; }
-.inputSmall { max-width: 200px; }
-.inputTiny { max-width: 100px; text-align: right;}
-.textareaLong { min-height: 100px; }
-
-/* Layout de Linha para Grupos de Campos */
-.row {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.row .fieldGroup {
-  flex: 1;
-  min-width: 250px;
-}
-
-/* ==========================================================================
-   Itens do Pedido (Linhas Dinâmicas)
-   ========================================================================== */
-
 .itemRow {
     display: flex;
-    align-items: flex-end; /* Alinha labels no topo, inputs na base */
-    gap: 20px;
+    align-items: center;
+    gap: 15px;
     margin-bottom: 15px;
-    padding: 15px;
-    border: 1px dashed #e8e8e8;
-    border-radius: 4px;
-    background-color: #fafafa;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #eee;
+}
+
+.itemRow:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .fieldGroupItem {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
 }
 
 .fieldGroupItem:first-child {
-    min-width: 250px; /* Mais espaço para o nome do produto */
+    flex-grow: 2;
+    min-width: 280px;
+    max-width: 40%;
 }
 
-.fieldGroupItem input,
-.fieldGroupItem select {
-    width: 100%;
+.fieldGroupItem:nth-child(2),
+.fieldGroupItem:nth-child(3) {
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 100px;
+}
+
+.alignRight {
+    text-align: right !important;
+}
+
+.itemTotalDisplay {
+    width: 120px;
+    padding-right: 10px;
+    text-align: right;
+    font-weight: 700;
+    flex-shrink: 0;
 }
 
 .fieldGroupItemTotal {
-    flex-shrink: 0;
-    width: 100px;
-    text-align: right;
-}
-
-.totalItem {
-    font-weight: 700;
-    color: #333;
-    font-size: 16px;
-    margin-top: 10px;
-}
-
-.removeItemButton {
-    background: none;
-    border: none;
-    color: #ff4d4f;
-    cursor: pointer;
-    padding: 10px;
-    transition: color 0.2s;
-}
-
-.removeItemButton:hover {
-    color: #ff7875;
-}
-
-.addItemSection {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.addItemButton {
-    background-color: #f0f0f0;
-    color: #595959;
-    padding: 10px 20px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 auto;
-}
-
-.addItemButton:hover {
-    background-color: #e8e8e8;
-}
-
-/* Total do Pedido */
-.totalPedidoContainer {
+    flex-grow: 1;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    margin-top: 30px;
-    padding-top: 15px;
-    border-top: 2px solid #f0f0f0;
+    padding-right: 5px;
 }
 
-.totalLabel {
-    font-size: 18px;
-    font-weight: 600;
-    color: #595959;
-    margin-right: 20px;
-}
-
-.totalValue {
-    font-size: 24px;
+.totalItem {
+    padding: 0;
+    margin: 0;
     font-weight: 700;
     color: #1890ff;
+    font-size: 16px;
 }
 
-/* --- Botão de Submissão --- */
-
-.footer {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
-  text-align: right;
+.fieldGroupItem input[name="valorUnitario"] {
+    text-align: right;
 }
 
-.submitButton {
-  background-color: #1890ff;
-  color: #fff;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  transition: background-color 0.2s;
-}
-
-.submitButton:hover:not(:disabled) {
-  background-color: #40a9ff;
-}
-
-.submitButton:disabled {
-  background-color: #91d5ff;
-  cursor: not-allowed;
-}
-
-/* --- Mensagens de Feedback --- */
-.alertMessage {
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.alertMessage p {
+.removeItemButton {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #dc3545;
+    flex-shrink: 0;
+    padding: 0;
     margin: 0;
-    line-height: 1.5;
+    align-self: flex-end;
+}
+.removeItemButton:hover {
+    color: #c82333;
+}
+.removeItemButton:disabled {
+    cursor: not-allowed;
+    color: #ccc;
 }
 
-.success {
-  background-color: #f6ffed;
-  border: 1px solid #b7eb8f;
-  color: #52c41a;
-}
 
-.error {
-  background-color: #fff1f0;
-  border: 1px solid #ffa39e;
-  color: #ff4d4f;
-}
-
-.divider {
-    border: 0;
-    height: 1px;
-    background-color: #f0f0f0;
-    margin: 30px 0;
-}
-
-/* Media Query para responsividade */
 @media (max-width: 768px) {
   .main-content {
     padding: 15px;
   }
-
   .formCard {
     padding: 20px 15px;
   }
-
   .row {
     flex-direction: column;
     gap: 0;
   }
-
   .row .fieldGroup {
     min-width: 100%;
   }
-
   .itemRow {
     flex-direction: column;
     align-items: stretch;
     padding: 10px;
   }
-
   .fieldGroupItem:first-child {
       min-width: 100%;
   }
-
   .fieldGroupItemTotal {
       width: 100%;
       text-align: left;
@@ -1147,18 +869,15 @@
       padding-top: 10px;
       border-top: 1px dashed #e8e8e8;
   }
-
   .removeItemButton {
       position: absolute;
       top: 5px;
       right: 5px;
   }
-
   .totalPedidoContainer {
       flex-direction: column;
       align-items: flex-end;
   }
-
   .totalLabel {
       margin-right: 0;
       margin-bottom: 5px;
@@ -1166,8 +885,21 @@
 }
 
 
-.formCard select:focus {
-    z-index: 10; /* Garante que o dropdown flutue sobre outros elementos, pode ajudar no posicionamento */
+.fieldGroupThird {
+    flex: 1 1 calc(33.333% - 10px);
+    min-width: 100px;
+}
+
+
+.row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.inputModal {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* =======================================================

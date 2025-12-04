@@ -1,0 +1,303 @@
+/* Variáveis de Cores */
+:root {
+    --primary-color: #007bff; /* Azul vibrante (pode ser ajustado para um tom mais escuro como o da imagem) */
+    --sidebar-bg: #2b3644; /* Fundo do sidebar escuro (próximo ao preto/cinza marinho) */
+    --sidebar-text: #e0e0e0; /* Cor do texto no sidebar */
+    --sidebar-active-bg: #3a475a; /* Fundo do item de menu ativo/hover */
+    --main-bg: #f4f6f9; /* Fundo principal claro */
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24); /* Sombra mais suave */
+    --border-color-light: #dee2e6;
+    --danger-color: #dc3545;
+}
+
+/* ------------------------------------
+ * Layout Principal
+ * ------------------------------------ */
+.dashboardContainer {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--main-bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ------------------------------------
+ * Sidebar (Navegação Esquerda Compacta)
+ * ------------------------------------ */
+.sidebar {
+    width: 250px; /* Largura padrão */
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.15);
+    padding: 0;
+}
+
+.logoArea {
+    padding: 20px 20px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logoText {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: white; /* Logo um pouco mais claro */
+}
+
+.menu {
+    flex-grow: 1;
+    padding: 10px 0;
+}
+
+.menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu li {
+    margin-bottom: 2px;
+}
+
+.menu a {
+    text-decoration: none;
+    color: var(--sidebar-text);
+    display: block;
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.menuItem:hover {
+    background-color: var(--sidebar-active-bg);
+    color: white;
+}
+
+.menu .icon {
+    margin-right: 15px;
+    font-size: 1.1rem;
+}
+
+.menu li.active .menuItem {
+    background-color: var(--sidebar-active-bg);
+    color: white;
+    font-weight: 500;
+    position: relative;
+}
+
+/* Linha azul de destaque para o item ativo, como na imagem */
+.menu li.active .menuItem::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-color);
+}
+
+/* Rodapé do Sidebar (Botão Sair) */
+.sidebarFooter {
+    padding: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logoutButton {
+    /* Estilo igual ao das imagens (botão simples, mas no rodapé) */
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--sidebar-text);
+    color: var(--sidebar-text);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.logoutButton:hover {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: white;
+}
+
+/* ------------------------------------
+ * Conteúdo Principal (Direita)
+ * ------------------------------------ */
+.mainContent {
+    flex-grow: 1;
+    padding: 30px;
+    color: #333;
+}
+
+.pageTitle {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #333;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color-light); /* Linha abaixo do título */
+}
+
+/* ------------------------------------
+ * Estilos de Card (Para Agrupar Seções)
+ * ------------------------------------ */
+.card {
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+    padding: 25px;
+    margin-bottom: 25px;
+    border-left: 5px solid #007bff00; /* Borda sutil */
+}
+
+.cardTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #495057;
+}
+
+/* ------------------------------------
+ * Formulário (Barra de Criação de Campanha)
+ * ------------------------------------ */
+
+.formContainer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.formContainer input {
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    height: 40px;
+}
+
+.formContainer input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Ajustes de Largura no Formulário de Criação */
+.formContainer input[name="name"] {
+    flex: 3; /* Nome da Campanha */
+}
+
+.formContainer input[name="supplier_id"] {
+    flex: 2; /* ID do Fornecedor */
+}
+
+.formContainer input[type="date"] {
+    flex: 1.5; /* Datas */
+    min-width: 140px;
+}
+
+.formContainer input[name="discount_percentage"] {
+    flex: 1; /* Desconto */
+    max-width: 100px;
+}
+
+/* Botão Primário (Criar Campanha) */
+.primaryButton {
+    flex-shrink: 0; /* Impede o botão de encolher */
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    height: 40px;
+}
+
+.primaryButton:hover {
+    background-color: #0056b3;
+}
+
+
+/* ------------------------------------
+ * Tabela de Campanhas
+ * ------------------------------------ */
+
+.tableCard {
+    padding: 0; /* Remove padding interno para a tabela ocupar o card */
+}
+
+.tableTitle {
+    /* Mantém o card de tabela limpo, pode ser removido se você não precisar de título */
+    display: none;
+}
+
+.tableContainer {
+    overflow-x: auto;
+    padding: 25px; /* Adiciona padding ao redor da tabela, se desejar separá-la das bordas do card */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+/* Cabeçalho da Tabela - Fundo Azul Claro, como na imagem */
+.table thead {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color-light);
+}
+
+.table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Estilo do Botão Excluir na Tabela */
+.deleteButton {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.deleteButton:hover {
+    background-color: #c82333;
+}
+
+.deleteIcon {
+    margin-right: 5px;
+    font-size: 0.9rem;
+}

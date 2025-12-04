@@ -1,14 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import withAuth from '../../components/withAuth';
 import api from '../../services/api';
-import styles from '../../styles/Loja.module.css';
+import styles from '../../styles/Geral.module.css';
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox,
   FiSearch, FiTrash2, FiChevronLeft, FiChevronRight,
-  FiChevronRight as FiArrowRight,
+  FiChevronRight as FiArrowRight, FiEdit, FiShoppingBag, FiTag
 } from 'react-icons/fi';
 
-// --- COMPONENTE INTERNO: BUSCA E DELETE ---
+
+
+const EditFornecedorModal = ({ fornecedor, onSave, onCancel, loading }) => {
+    const [formData, setFormData] = useState(fornecedor);
+
+
+    useEffect(() => {
+        setFormData(fornecedor);
+    }, [fornecedor]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
+    };
+
+    return (
+        <div className={styles.modalBackdrop}>
+
+            <div className={styles.modalContent}>
+                <h3 className={styles.modalTitle}>Editar Fornecedor: {fornecedor.supplier_name}</h3>
+
+                <form onSubmit={handleSubmit}>
+
+
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                            <label>Nome da Loja</label>
+
+                            <input type="text" name="supplier_name" value={formData.supplier_name} onChange={handleChange} required className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Categoria</label>
+
+                            <input type="text" name="supplier_category" value={formData.supplier_category || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                    </div>
+
+
+                    <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                            <label>Responsável</label>
+
+                            <input type="text" name="responsavel" value={formData.responsavel || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Email (Login)</label>
+
+                            <input type="email" name="contact_email" value={formData.contact_email} disabled className={styles.inputModal} />
+                        </div>
+                    </div>
+
+
+                    <div className={styles.row}>
+                         <div className={styles.fieldGroup}>
+                            <label>Telefone</label>
+
+                            <input type="text" name="phone_number" value={formData.phone_number || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                    </div>
+
+
+                    <h4 className={styles.sectionTitle} style={{ marginTop: '15px' }}>Endereço</h4>
+                    <div className={styles.row}>
+                        <div className={`${styles.fieldGroup} ${styles.fieldGroupThird}`}>
+                            <label>Rua/Avenida</label>
+                            <input type="text" name="rua" value={formData.rua || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                        <div className={`${styles.fieldGroup} ${styles.fieldGroupThird}`}>
+                            <label>Cidade</label>
+                            <input type="text" name="cidade" value={formData.cidade || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                        <div className={`${styles.fieldGroup} ${styles.fieldGroupThird}`}>
+                            <label>Estado (UF)</label>
+                            {/* AJUSTE 2: Aplicação da classe inputModal. A classe inputModal resolve o problema se o CSS for adicionado/verificado. */}
+                            <input type="text" name="estado" value={formData.estado || ''} onChange={handleChange} className={styles.inputModal} />
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <h4 className={styles.sectionTitle} style={{ marginTop: '15px' }}>Status</h4>
+                     <div className={styles.row}>
+                        <div className={styles.fieldGroup}>
+                             <label>Status</label>
+                             <select name="status" value={formData.status || 'on'} onChange={handleChange} className={styles.inputModal}>
+                                 <option value="on">Ativo</option>
+                                 <option value="off">Inativo</option>
+                             </select>
+                         </div>
+                    </div>
+
+
+                    <div className={styles.modalActions}>
+                        <button
+                            className={`${styles.submitButton} ${styles.btnCancel}`}
+                            type="button"
+                            onClick={onCancel}
+                            disabled={loading}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            className={styles.submitButton}
+                            type="submit"
+                            disabled={loading}
+                        >
+                            {loading ? 'Salvando...' : 'Salvar Alterações'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+
 
 const BuscaFornecedores = () => {
   const [searchId, setSearchId] = useState('');
@@ -19,11 +139,13 @@ const BuscaFornecedores = () => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
+  const [editingFornecedor, setEditingFornecedor] = useState(null);
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [message, setMessage] = useState(null);
-  const [currentAction, setCurrentAction] = useState('deactivate'); // Ação que será executada
+  const [currentAction, setCurrentAction] = useState('deactivate');
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const itemsPerPage = 5;
@@ -38,9 +160,9 @@ const BuscaFornecedores = () => {
     setMessage(null);
     setCurrentIndex(0);
     setExpandedId(null);
-
+    setEditingFornecedor(null);
     try {
-      // ⭐️ CORREÇÃO APLICADA AQUI: USANDO A ROTA RAIZ PARA LISTAGEM
+
       const response = await api.get('/api/fornecedores');
       let dados = response.data;
 
@@ -58,7 +180,49 @@ const BuscaFornecedores = () => {
     }
   };
 
-  // ⭐️ Função para iniciar a ação (Deactivate ou Delete)
+
+  const startEdit = (fornecedor) => {
+    setMessage(null);
+    setEditingFornecedor(fornecedor);
+  };
+
+
+  const cancelEdit = () => {
+    setEditingFornecedor(null);
+  };
+
+
+  const handleUpdateSubmit = async (updatedData) => {
+    setLoading(true);
+    setMessage(null);
+    const id = updatedData._id;
+
+
+    const { _id, ...dataToSend } = updatedData;
+
+    try {
+
+        await api.put(`/api/fornecedores/id/${id}`, dataToSend);
+
+
+        setFornecedores(oldList => oldList.map(item =>
+            item._id === id ? { ...item, ...dataToSend } : item
+        ));
+
+        setEditingFornecedor(null);
+        setMessage({ type: 'success', text: "Fornecedor atualizado com sucesso!" });
+
+    } catch (error) {
+        console.error("Erro ao atualizar:", error);
+        const errorMessage = error.response?.data?.error || "Erro desconhecido.";
+        setMessage({ type: 'error', text: `Erro ao atualizar fornecedor: ${errorMessage}` });
+    } finally {
+        setLoading(false);
+    }
+  };
+
+
+
   const startAction = (id, action) => {
     setDeleteId(id);
     setCurrentAction(action);
@@ -71,7 +235,7 @@ const BuscaFornecedores = () => {
     setCurrentAction('deactivate'); // Reset
   };
 
-  // ⭐️ Lida tanto com Desativação (PUT) quanto com Exclusão (DELETE)
+
   const handleConfirmAction = async () => {
     if (!deleteId) return;
     setShowConfirm(false);
@@ -79,10 +243,10 @@ const BuscaFornecedores = () => {
     setMessage(null);
 
     try {
-      // Ações PUT e DELETE ainda usam o subcaminho para manter a compatibilidade
+
       if (currentAction === 'deactivate') {
-        // --- DESATIVAÇÃO (SOFT DELETE) ---
-        await api.put(`/api/fornecedores/cadastroFornecedor/${deleteId}`, { status: 'off' });
+
+        await api.put(`/api/fornecedores/id/${deleteId}`, { status: 'off' });
 
         setFornecedores(oldList => oldList.map(item =>
           item._id === deleteId ? { ...item, status: 'off' } : item
@@ -91,10 +255,10 @@ const BuscaFornecedores = () => {
         setMessage({ type: 'success', text: "Fornecedor desativado com sucesso!" });
 
       } else if (currentAction === 'delete') {
-        // --- EXCLUSÃO PERMANENTE (HARD DELETE) ---
-        await api.delete(`/api/fornecedores/cadastroFornecedor/${deleteId}`);
 
-        // Filtra a lista para remover o item do frontend
+        await api.delete(`/api/fornecedores/id/${deleteId}`);
+
+
         setFornecedores(oldList => oldList.filter(item => item._id !== deleteId));
 
         setMessage({ type: 'success', text: "Fornecedor e usuário associado deletados permanentemente!" });
@@ -110,7 +274,7 @@ const BuscaFornecedores = () => {
     } finally {
       setLoading(false);
       setDeleteId(null);
-      setCurrentAction('deactivate'); // Reset
+      setCurrentAction('deactivate');
     }
   };
 
@@ -132,7 +296,7 @@ const BuscaFornecedores = () => {
   const totalPages = Math.ceil(fornecedores.length / itemsPerPage);
   const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
 
-  // --- Modal de Confirmação ---
+
   const ConfirmationModal = () => {
     const isDeleting = currentAction === 'delete';
 
@@ -166,7 +330,7 @@ const BuscaFornecedores = () => {
     );
   };
 
-  // --- Linha Expandida (sem alterações) ---
+
   const ExpandedDetailsRow = ({ fornecedor }) => (
     <div className={styles['expanded-details-row']}>
       <div className={styles['detail-full-span']}>
@@ -269,7 +433,10 @@ const BuscaFornecedores = () => {
                         <div className={styles['detail-cell']}>
                             <p>{fornecedor.responsavel || '-'}</p>
                         </div>
+
                         <div className={styles['item-actions']}>
+
+
                           <button
                               className={`${styles['btn-detail']} ${isExpanded ? styles['btn-rotated'] : ''}`}
                               title={isExpanded ? "Esconder Detalhes" : "Ver Detalhes"}
@@ -281,14 +448,28 @@ const BuscaFornecedores = () => {
                               <FiArrowRight size={20} />
                           </button>
 
+
+                          <button
+                            className={styles['btn-edit']}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                startEdit(fornecedor);
+                            }}
+                            title="Editar Fornecedor"
+                            disabled={loading}
+                          >
+                            <FiEdit size={18} />
+                          </button>
+
+
                           <button
                             className={styles['btn-delete']}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (isDeactivated) {
-                                  startAction(fornecedor._id, 'delete'); // Exclusão definitiva (Hard Delete)
+                                  startAction(fornecedor._id, 'delete');
                                 } else {
-                                  startAction(fornecedor._id, 'deactivate'); // Desativação (Soft Delete)
+                                  startAction(fornecedor._id, 'deactivate');
                                 }
                             }}
                             title={isDeactivated ? "Excluir Permanentemente" : "Desativar Fornecedor"}
@@ -323,11 +504,22 @@ const BuscaFornecedores = () => {
       </div>
 
       {showConfirm && <ConfirmationModal />}
+
+      {editingFornecedor && (
+          <EditFornecedorModal
+              fornecedor={editingFornecedor}
+              onSave={handleUpdateSubmit}
+              onCancel={cancelEdit}
+              loading={loading}
+          />
+      )}
     </>
   );
 };
 
-export default function CadastroFornecedor() {
+
+
+function CadastroFornecedor() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -354,7 +546,7 @@ export default function CadastroFornecedor() {
     };
 
     try {
-      // POST já está correto na rota raiz
+
       const response = await api.post('/api/fornecedores', dadosParaBackend);
       const successText = `✅ Sucesso!\n\nFornecedor: ${response.data.fornecedor.supplier_name}\nLogin: ${response.data.usuarioGerado.user}\nSenha: ${response.data.usuarioGerado.pwd}`;
       setMessage({ type: 'success', text: successText });
@@ -365,7 +557,7 @@ export default function CadastroFornecedor() {
       });
     } catch (error) {
         const errorText = error.response?.data?.error || "Erro ao conectar com o servidor.";
-        setMessage({ type: 'error', text: `❌ Erro: ${errorText}` });
+        setMessage({ type: 'error', text: ` Erro: ${errorText}` });
     } finally {
       setLoading(false);
     }
@@ -376,11 +568,13 @@ export default function CadastroFornecedor() {
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
-          <li className={styles.active}><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Cadastrar Fornecedores</span></div></Link></li>
-          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Lojistas</span></div></Link></li>
-          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
-          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
-          <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
+          <li className={styles.active}><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Fornecedores</span></div></Link></li>
+          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Lojistas</span></div></Link></li>
+          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Produtos</span></div></Link></li>
+          <li><Link href="/admin/CadastroPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiShoppingBag size={20} /><span>Pedidos</span></div></Link></li>
+          <li><Link href="/admin/CadastroCampanha" className={styles.linkReset}><div className={styles.menuItem}><FiTag size={20} /><span>Campanhas</span></div></Link></li>
+      {/* <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li> */}
+          <li><Link href="/admin/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
         </ul>
       </nav>
 
@@ -401,12 +595,12 @@ export default function CadastroFornecedor() {
           <h2 className={styles.sectionTitle}>Dados do Fornecedor</h2>
 
           <div className={styles.fieldGroup}>
-            <label>Nome da loja <span className={styles.requiredAsterisk}>*</span></label>
+            <label>Nome do Fornecedor <span className={styles.requiredAsterisk}>*</span></label>
             <input type="text" name="supplier_name" className={styles.inputLong} value={formData.supplier_name} onChange={handleChange} required />
           </div>
 
           <div className={styles.fieldGroup}>
-            <label>Categoria da Loja <span className={styles.requiredAsterisk}>*</span></label>
+            <label>Categoria do fornecedor <span className={styles.requiredAsterisk}>*</span></label>
             <input type="text" name="supplier_category" className={styles.inputLong} placeholder="Ex: Eletrônicos..." value={formData.supplier_category} onChange={handleChange} required />
           </div>
 
@@ -469,3 +663,6 @@ export default function CadastroFornecedor() {
     </div>
   );
 }
+
+
+export default withAuth(CadastroFornecedor);

@@ -1,113 +1,531 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import styles from '../../styles/Loja.module.css';
+import withAuth from '../../components/withAuth';
+import styles from '../../styles/Pedido.module.css';
 import api from '../../services/api';
 import {
-  FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiBox, FiPlus, FiTrash2, FiRefreshCw, FiChevronDown
+  FiGrid,
+  FiUsers,
+  FiPackage,
+  FiUser,
+  FiLogOut,
+  FiBox,
+  FiPlus,
+  FiTrash2,
+  FiChevronDown,
+  FiSearch,
+  FiEdit,
+  FiChevronLeft,
+  FiChevronRight,
+  FiShoppingBag,
+  FiTag
 } from 'react-icons/fi';
 
-// ============================================================================
-// COMPONENTE DROPDOWN CUSTOMIZADO (CORRIGIDO)
-// ============================================================================
-const CustomProductDropdown = ({ options, value, onChange, placeholder, className, required, index, disabled = false }) => {
-  const [isOpen, setIsOpen] = useState(false);
 
-  // Encontra o objeto selecionado para mostrar o nome
-  const selectedOption = options.find(option => option._id === value);
-  const displayValue = selectedOption ? (selectedOption.name || selectedOption.nome) : placeholder;
+const formatCurrency = (value) => {
+  const n = Number(value) || 0;
+  return n.toFixed(2).replace('.', ',');
+};
 
-  // Fechar o dropdown se clicar fora
+const parseCurrencyInput = (raw) => {
+  if (raw === undefined || raw === null) return 0;
+  const s = String(raw).replace(/\./g, '').replace(/,/g, '.');
+  const num = parseFloat(s);
+  return Number.isFinite(num) ? num : 0;
+};
+
+// ============================================================================
+// 1. COMPONENTE MODAL DE EDIÇÃO DE PEDIDO (UPDATE)
+// ============================================================================
+const EditPedidoModal = ({ pedido = {}, onSave, onCancel, loading }) => {
+  const safeDate = pedido.order_date ? String(pedido.order_date).substring(0, 10) : new Date().toISOString().substring(0, 10);
+
+  const [formData, setFormData] = useState({
+    ...pedido,
+    order_date: safeDate,
+  });
+
   useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (isOpen && event.target.closest(`.${styles.customDropdownContainer}`)?.id !== `dropdown-container-${index}`) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [isOpen, index]);
+    const newSafeDate = pedido.order_date ? String(pedido.order_date).substring(0, 10) : new Date().toISOString().substring(0, 10);
+    setFormData({ ...pedido, order_date: newSafeDate });
+  }, [pedido]);
 
-  const handleSelect = (optionId) => {
-    onChange({ target: { name: 'produtoId', value: optionId } });
-    setIsOpen(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleClick = () => {
-    // CORREÇÃO: Só impede de abrir se estiver explicitamente "disabled" (sem fornecedor selecionado)
-    // Antes estava verificando options.length, o que impedia de ver a mensagem "Nenhum produto"
-    if (!disabled) {
-        setIsOpen(!isOpen);
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      ...formData,
+      order_date: formData.order_date
+    };
+    onSave(payload);
   };
 
   return (
-    <div
-      className={`${styles.customDropdownContainer} ${className}`}
-      id={`dropdown-container-${index}`}
-    >
+    <div className={styles.modalBackdrop}>
+      <div className={styles.modalContent}>
+        <h3 className={styles.modalTitle}>Editar Pedido: #{String(formData._id || '').substring(0, 8)}</h3>
+
+        <form onSubmit={handleSubmit}>
+          <div className={styles.row}>
+            <div className={styles.fieldGroup}>
+              <label>Status do Pedido</label>
+              <select name="status" value={formData.status || 'Pendente'} onChange={handleChange} required className={styles.inputModal}>
+                <option value="Pendente">Pendente</option>
+                <option value="Enviado">Enviado</option>
+                <option value="Entregue">Entregue</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label>Data do Pedido</label>
+              <input type="date" name="order_date" value={formData.order_date || ''} onChange={handleChange} required className={styles.inputModal} />
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label>Observações</label>
+            <textarea name="notes" value={formData.notes || ''} onChange={handleChange} className={styles.textareaLong} rows="3" />
+          </div>
+
+          <div className={styles.modalActions}>
+            <button
+              className={`${styles.submitButton} ${styles.btnCancel}`}
+              type="button"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+
+            <button className={styles.submitButton} type="submit" disabled={loading}>
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
+const CustomProductDropdown = ({ options = [], value = '', onChange, placeholder = 'Selecione', className = '', required = false, disabled = false }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const selectedOption = options.find(option => String(option._id).trim() === String(value).trim());
+  const displayValue = selectedOption ? (selectedOption.name || selectedOption.nome) : placeholder;
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const handleSelect = (optionId) => {
+    if (onChange) onChange({ target: { name: 'produtoId', value: String(optionId) } });
+    setIsOpen(false);
+  };
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (!disabled) setIsOpen(prev => !prev);
+  };
+
+  return (
+    <div ref={dropdownRef} className={`${styles.customDropdownContainer} ${className}`}>
       <div
-        className={`${styles.dropdownInput} ${isOpen ? styles.active : ''} ${styles.inputLong}`}
+        className={`${styles.dropdownInput} ${isOpen ? styles.active : ''}`}
         onClick={handleClick}
-        tabIndex="0"
-        // Adiciona feedback visual se estiver desabilitado
-        style={{
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            opacity: disabled ? 0.6 : 1,
-            backgroundColor: disabled ? '#f0f0f0' : '#fff'
-        }}
+        tabIndex={0}
+        role="button"
+        style={{ cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.9 : 1 }}
       >
         <span>{displayValue}</span>
         <FiChevronDown size={16} className={`${styles.arrowIcon} ${isOpen ? styles.up : ''}`} />
       </div>
 
-      {/* Menu com as opções */}
       {isOpen && !disabled && (
         <div className={styles.dropdownMenu}>
-            {/* Caso 1: Existem produtos */}
-            {options.length > 0 ? (
-                options.map(option => (
-                    <div
-                    key={option._id}
-                    className={`${styles.dropdownItem} ${option._id === value ? styles.selected : ''}`}
-                    onClick={() => handleSelect(option._id)}
-                    >
-                    {option.name || option.nome}
-                    </div>
-                ))
-            ) : (
-                // Caso 2: Lista vazia (mensagem de feedback)
-                <div className={styles.dropdownItem} style={{ fontStyle: 'italic', cursor: 'default', color: '#999' }}>
-                    Nenhum produto encontrado para este fornecedor.
-                </div>
-            )}
+          {options.length > 0 ? (
+            options.map(option => (
+              <div
+                key={String(option._id)}
+                className={`${styles.dropdownItem} ${String(option._id).trim() === String(value).trim() ? styles.selected : ''}`}
+                onClick={() => handleSelect(option._id)}
+              >
+                {option.name || option.nome}
+              </div>
+            ))
+          ) : (
+            <div className={styles.dropdownItem} style={{ fontStyle: 'italic', cursor: 'default', color: '#999' }}>
+              Nenhum produto encontrado para este fornecedor.
+            </div>
+          )}
         </div>
       )}
 
-      {/* Input oculto para validação HTML "required" */}
-      <input
-        type="hidden"
-        name="produtoId"
-        value={value}
-        required={required && !disabled}
-      />
+      <input type="hidden" name="produtoId" value={value} required={required && !disabled} />
     </div>
   );
 };
 
 // ============================================================================
-// COMPONENTE PRINCIPAL: CadastroPedido
+// 3. COMPONENTE DE BUSCA E GERENCIAMENTO DE PEDIDOS
 // ============================================================================
-const CadastroPedido = () => {
+const BuscaPedidos = ({ allFornecedores = [], allProdutos = [] }) => {
+  const [searchId, setSearchId] = useState('');
+
+  const [searchSupplierInput, setSearchSupplierInput] = useState('');
+
+  const [pedidos, setPedidos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const [expandedPedidoId, setExpandedPedidoId] = useState(null);
+  const [editingPedido, setEditingPedido] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [message, setMessage] = useState(null);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const itemsPerPage = 5;
+
+  const normalizeId = (id) => {
+    if (!id) return '';
+    if (typeof id === 'string') return id.trim();
+    if (typeof id === 'object' && id.$oid) return String(id.$oid).trim();
+    return String(id).trim();
+  };
+
+  const getSupplierName = (supplierId) => {
+    const idPedido = normalizeId(supplierId);
+    const supplier = allFornecedores.find(
+      (f) => normalizeId(f._id) === idPedido
+    );
+    return supplier ? supplier.supplier_name : 'N/A';
+  };
+
+  const getProductStatus = (productId) => {
+    const pid = normalizeId(productId);
+    const produto = allProdutos.find((p) => normalizeId(p._id) === pid);
+    return String(produto?.status).toLowerCase() === 'on' ? 'on' : 'off';
+  };
+
+  const toggleDetails = (pedidoId) => {
+    setExpandedPedidoId((prev) => (prev === pedidoId ? null : pedidoId));
+  };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    setSearched(true);
+    setMessage(null);
+    setCurrentIndex(0);
+    setEditingPedido(null);
+    setExpandedPedidoId(null);
+
+    try {
+      const response = await api.get('/api/pedidos');
+      let dados = Array.isArray(response.data) ? response.data : [];
+
+
+      if (searchId.trim() !== '') {
+        const searchIdLower = searchId.trim().toLowerCase();
+        dados = dados.filter((p) =>
+          normalizeId(p._id).toLowerCase().includes(searchIdLower)
+        );
+      }
+
+
+      if (searchSupplierInput.trim() !== '') {
+        const term = searchSupplierInput.trim().toLowerCase();
+
+
+        const matchingSupplierIds = allFornecedores
+            .filter(f => f.supplier_name.toLowerCase().includes(term))
+            .map(f => normalizeId(f._id));
+
+        dados = dados.filter(p => {
+            const pedidoSupplierId = normalizeId(p.supplier_id);
+
+            return matchingSupplierIds.includes(pedidoSupplierId) || pedidoSupplierId.toLowerCase().includes(term);
+        });
+      }
+
+
+      dados = dados.map((p) => ({
+        ...p,
+        supplier_id: normalizeId(p.supplier_id),
+        _id: normalizeId(p._id),
+        total_amount: Number(p.total_amount) || 0,
+        status: p.status || 'Pendente',
+      }));
+
+      setPedidos(dados);
+    } catch (error) {
+      console.error('Erro ao buscar pedidos:', error);
+      const msg = error.response
+        ? `Status ${error.response.status}: ${error.response.data?.error}`
+        : 'Erro de conexão';
+      setMessage({ type: 'error', text: `Erro ao buscar pedidos: ${msg}` });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startEdit = (pedido) => {
+    setMessage(null);
+    setEditingPedido(pedido);
+  };
+
+  const cancelEdit = () => setEditingPedido(null);
+
+  const handleUpdateSubmit = async (updatedData) => {
+    setLoading(true);
+    setMessage(null);
+    const id = normalizeId(updatedData._id);
+    const { _id, ...dataToSend } = updatedData;
+
+    try {
+      await api.put(`/api/pedidos/${id}`, dataToSend);
+      setPedidos((oldList) =>
+        oldList.map((item) =>
+          normalizeId(item._id) === id ? { ...item, ...dataToSend } : item
+        )
+      );
+      setEditingPedido(null);
+      setMessage({
+        type: 'success',
+        text: `Pedido #${String(id).substring(0, 8)} atualizado com sucesso!`,
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar pedido:', error);
+      const msg = error.response?.data?.error || error.message || 'Erro desconhecido';
+      setMessage({ type: 'error', text: `Erro ao atualizar: ${msg}` });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startDelete = (id) => {
+    setDeleteId(normalizeId(id));
+    setShowConfirm(true);
+  };
+
+  const cancelAction = () => {
+    setDeleteId(null);
+    setShowConfirm(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteId) return;
+    setShowConfirm(false);
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      await api.delete(`/api/pedidos/${deleteId}`);
+      setPedidos((oldList) =>
+        oldList.filter((item) => normalizeId(item._id) !== deleteId)
+      );
+      setMessage({
+        type: 'success',
+        text: 'Pedido deletado permanentemente!',
+      });
+    } catch (error) {
+      console.error('Erro ao deletar:', error);
+      const msg = error.response?.data?.error || 'Erro desconhecido.';
+      setMessage({ type: 'error', text: `Erro ao deletar: ${msg}` });
+    } finally {
+      setLoading(false);
+      setDeleteId(null);
+    }
+  };
+
+  const nextSlide = () => {
+    setCurrentIndex((prev) =>
+      Math.min(prev + itemsPerPage, Math.max(0, pedidos.length - itemsPerPage))
+    );
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => Math.max(prev - itemsPerPage, 0));
+  };
+
+  const visibleItems = pedidos.slice(currentIndex, currentIndex + itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(pedidos.length / itemsPerPage));
+  const currentPage = Math.floor(currentIndex / itemsPerPage) + 1;
+
+  const ConfirmationModal = () => (
+    <div className={styles.modalBackdrop}>
+      <div className={styles.modalContent} style={{ maxWidth: 400 }}>
+        <h3 className={styles.modalTitle}>Confirmação de Exclusão</h3>
+        <p className={styles.modalText}>
+          Tem certeza que deseja excluir permanentemente este pedido?
+        </p>
+        <div className={styles.modalActions}>
+          <button className={`${styles.submitButton} ${styles.btnCancel}`} onClick={cancelAction}>
+            Cancelar
+          </button>
+          <button
+            className={`${styles.submitButton} ${styles.btnDanger}`}
+            onClick={handleConfirmDelete}
+            disabled={loading}
+          >
+            {loading ? 'Processando...' : 'Confirmar Exclusão'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={styles['search-section']}>
+      <h2 className={styles['search-header']}>Consultar / Gerenciar Pedidos</h2>
+
+      {message && (
+        <div className={`${styles.alertMessage} ${styles[message.type]}`}>
+          {String(message.text).split('\n').map((line, idx) => (
+              <p key={idx} className={styles.messageLine}>{line}</p>
+          ))}
+        </div>
+      )}
+
+
+      <div className={styles['search-inputs']}>
+        <div className={styles['search-group']}>
+          <label>ID Pedido</label>
+          <input
+            placeholder="Ex: 64b..."
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+          />
+        </div>
+
+
+        <div className={styles['search-group']}>
+          <label>Fornecedor (Nome)</label>
+          <input
+            type="text"
+            placeholder="Ex: Fornecedor X..."
+            value={searchSupplierInput}
+            onChange={(e) => setSearchSupplierInput(e.target.value)}
+          />
+        </div>
+
+        <button
+          className={styles['btn-search']}
+          onClick={handleSearch}
+          disabled={loading}
+        >
+          <FiSearch size={16} /> {loading ? 'Buscando...' : 'Buscar'}
+        </button>
+      </div>
+
+      {pedidos.length > 0 && (
+        <>
+          <div className={styles['provider-list-container']}>
+            <div className={`${styles['provider-list-item']} ${styles['provider-list-header']}`}>
+              <div className={styles['header-cell']}>ID Pedido</div>
+              <div className={styles['header-cell']}>Fornecedor</div>
+              <div className={styles['header-cell']}>Total (R$)</div>
+              <div className={styles['header-cell']}>Status</div>
+              <div className={styles['header-cell-actions']}>Ações</div>
+            </div>
+
+            {visibleItems.map((pedido) => {
+              const isExpanded = expandedPedidoId === pedido._id;
+              const isCanceled = pedido.status === 'Cancelado';
+              const itemClasses = [
+                styles['provider-list-item'],
+                isCanceled && styles['item-status-off'],
+                isExpanded && styles['item-expanded'],
+              ].filter(Boolean).join(' ');
+
+              return (
+                <React.Fragment key={pedido._id}>
+                  <div className={itemClasses} onClick={() => toggleDetails(pedido._id)}>
+                    <div className={styles['detail-cell-name']}>#{pedido._id.substring(0, 8)}</div>
+                    <div className={styles['detail-cell']}>{getSupplierName(pedido.supplier_id)}</div>
+                    <div className={styles['detail-cell']}>R$ {formatCurrency(pedido.total_amount)}</div>
+                    <div className={styles['detail-cell']}>
+                      <span className={styles[`status-${pedido.status.toLowerCase()}`]}>{pedido.status}</span>
+                    </div>
+                    <div className={styles['item-actions']}>
+                      <button className={styles['btn-detail']} onClick={(e) => { e.stopPropagation(); toggleDetails(pedido._id); }}>
+                        <FiChevronDown size={20} className={isExpanded ? styles['btn-rotated'] : ''} />
+                      </button>
+                      <button className={styles['btn-edit']} onClick={(e) => { e.stopPropagation(); startEdit(pedido); }}>
+                        <FiEdit size={16} />
+                      </button>
+                      <button className={styles['btn-delete']} onClick={(e) => { e.stopPropagation(); startDelete(pedido._id); }}>
+                        <FiTrash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className={styles['expanded-details-row']}>
+                      <p><strong>ID Completo:</strong> {pedido._id}</p>
+                      <p><strong>Data:</strong> {pedido.order_date ? new Date(pedido.order_date).toLocaleDateString() : 'N/A'}</p>
+                      {pedido.items?.length > 0 && (
+                        <p><strong>Status Produto:</strong> {getProductStatus(pedido.items[0].product_id) === 'on' ? 'Ativo' : 'Inativo'}</p>
+                      )}
+                      <p><strong>Observações:</strong> {pedido.notes || 'Nenhuma'}</p>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          <div className={styles.paginationControls}>
+            <button className={styles['nav-btn']} onClick={prevSlide} disabled={currentIndex === 0}>
+              <FiChevronLeft size={20} />
+            </button>
+            <span className={styles.pageInfo}>Página {currentPage} de {totalPages}</span>
+            <button className={styles['nav-btn']} onClick={nextSlide} disabled={currentIndex + itemsPerPage >= pedidos.length}>
+              <FiChevronRight size={20} />
+            </button>
+          </div>
+        </>
+      )}
+
+      {!loading && searched && pedidos.length === 0 && (
+        <p className={styles['no-data']}>Nenhum pedido encontrado. Verifique os filtros.</p>
+      )}
+
+      {!loading && !searched && pedidos.length === 0 && (
+        <p className={styles['no-data']}>Busque algo ou recarregue a página.</p>
+      )}
+
+      {showConfirm && <ConfirmationModal />}
+      {editingPedido && <EditPedidoModal pedido={editingPedido} onSave={handleUpdateSubmit} onCancel={cancelEdit} loading={loading} />}
+    </div>
+  );
+};
+
+// ============================================================================
+// 4. COMPONENTE PRINCIPAL: CadastroPedido
+// ============================================================================
+function CadastroPedido (){
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [message, setMessage] = useState(null);
 
-  // Estados para dados da API
   const [fornecedores, setFornecedores] = useState([]);
-  const [produtos, setProdutos] = useState([]);         // Todos os produtos
-  const [filteredProdutos, setFilteredProdutos] = useState([]); // Apenas do fornecedor selecionado
+  const [produtos, setProdutos] = useState([]);
+  const [filteredProdutos, setFilteredProdutos] = useState([]);
 
-  // Estados do Formulário
   const [formData, setFormData] = useState({
     fornecedorId: '',
     dataPedido: new Date().toISOString().substring(0, 10),
@@ -115,361 +533,373 @@ const CadastroPedido = () => {
     observacoes: ''
   });
 
-  const [itensPedido, setItensPedido] = useState([
-    { produtoId: '', quantidade: 1, valorUnitario: 0.00 }
-  ]);
+  const [itensPedido, setItensPedido] = useState([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
 
-  // --- 1. Carregar Dados Iniciais ---
+
   const loadInitialData = async () => {
     setLoadingData(true);
     setMessage(null);
+
     try {
       const respFornecedores = await api.get('/api/fornecedores');
-      setFornecedores(respFornecedores.data);
+      const normalizedFornecedores = Array.isArray(respFornecedores.data)
+        ? respFornecedores.data.map(f => ({ ...f, _id: String(f._id).trim() }))
+        : [];
+      setFornecedores(normalizedFornecedores);
 
       const respProdutos = await api.get('/api/produtos');
-      setProdutos(respProdutos.data);
-      console.log('✅ Dados Iniciais Carregados. Total Produtos:', respProdutos.data.length);
+      const normalizedProdutos = Array.isArray(respProdutos.data) ? respProdutos.data.map(p => ({
+        ...p,
+        supplier_id: String(p.supplier_id || '').trim(),
+        _id: String(p._id).trim(),
+        price: Number(p.price) || 0,
+        stock_quantity: Number(p.stock_quantity) || 0,
+        status: String(p.status || 'off').toLowerCase()
+      })) : [];
+      setProdutos(normalizedProdutos);
 
     } catch (error) {
-      console.error("Erro ao carregar dados:", error);
-      const errorMsg = error.response ? error.response.data.error : error.message;
+      console.error('Erro ao carregar dados:', error);
+      const errorMsg = error.response ? error.response.data?.error || error.message : error.message;
       setMessage({ type: 'error', text: `Erro ao carregar dados: ${errorMsg}` });
     } finally {
       setLoadingData(false);
     }
   };
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
+  useEffect(() => { loadInitialData(); }, []);
 
-  // --- 2. Filtro de Produtos (Monitora Fornecedor) ---
+
   useEffect(() => {
-    const selectedSupplierId = formData.fornecedorId;
+    const selectedSupplierId = String(formData.fornecedorId).trim();
 
     if (selectedSupplierId) {
-      // Filtra comparando Strings para evitar erros de tipo
-      const produtosDoFornecedor = produtos.filter(p => {
-          return String(p.supplier_id) === String(selectedSupplierId);
-      });
-
-      console.log(`Filtro aplicado. Fornecedor: ${selectedSupplierId}. Produtos encontrados: ${produtosDoFornecedor.length}`);
+      const produtosDoFornecedor = produtos.filter(p =>
+        String(p.supplier_id).trim() === selectedSupplierId && String(p.status).toLowerCase() === 'on'
+      );
       setFilteredProdutos(produtosDoFornecedor);
 
-      // Limpa itens que não pertencem mais ao novo fornecedor
-      setItensPedido(currentItens => {
-          return currentItens.map(item => {
-              const produtoValido = produtosDoFornecedor.some(p => p._id === item.produtoId);
-              if (item.produtoId && !produtoValido) {
-                  return { produtoId: '', quantidade: 1, valorUnitario: 0.00 };
-              }
-              return item;
-          });
-      });
-
+      setItensPedido(currentItens => currentItens.map(item => {
+        const produtoValido = produtosDoFornecedor.some(p => String(p._id).trim() === String(item.produtoId).trim());
+        if (item.produtoId && !produtoValido) {
+          return { produtoId: '', quantidade: 1, valorUnitario: 0.00 };
+        }
+        return item;
+      }));
     } else {
       setFilteredProdutos([]);
       setItensPedido([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
     }
   }, [formData.fornecedorId, produtos]);
 
-
-  // --- 3. Handlers de Formulário ---
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const cleanedValue = name === 'fornecedorId' ? String(value).trim() : value;
+    setFormData(prev => ({ ...prev, [name]: cleanedValue }));
   };
 
-  const handleItemChange = useCallback((index, e, productsList) => {
+  const handleItemChange = useCallback((index, e, productsList = filteredProdutos) => {
     const { name, value } = e.target;
+
     setItensPedido(prevItens => {
-        const novosItens = [...prevItens];
+      const novosItens = [...prevItens];
+      const itemAtual = novosItens[index];
 
-        if (name === 'valorUnitario') {
-            novosItens[index][name] = parseFloat(value) || 0;
-        } else if (name === 'quantidade') {
-            novosItens[index][name] = parseInt(value) || 1;
-        } else {
-            novosItens[index][name] = value;
+      if (name === 'valorUnitario') {
+        return prevItens;
+      }
 
-            // Ao selecionar produto, puxa o preço automaticamente
-            if (name === 'produtoId' && value) {
-                const produtoSelecionado = productsList.find(p => p._id === value);
-                // Tenta pegar 'price' (conforme seu Schema) ou 'valor' como fallback
-                novosItens[index].valorUnitario = produtoSelecionado?.price || produtoSelecionado?.valor || 0.00;
+      else if (name === 'quantidade') {
+        let novaQtd = parseInt(value, 10);
+        if (isNaN(novaQtd) || novaQtd < 1) novaQtd = 1;
+
+        if (itemAtual.produtoId) {
+          const produtoRef = productsList.find(p => String(p._id).trim() === String(itemAtual.produtoId).trim());
+          if (produtoRef) {
+            if (novaQtd > produtoRef.stock_quantity) {
+              alert(`Quantidade indisponível! Estoque atual: ${produtoRef.stock_quantity}`);
+              novaQtd = produtoRef.stock_quantity > 0 ? produtoRef.stock_quantity : 1;
             }
+          }
         }
-        return novosItens;
+        novosItens[index][name] = novaQtd;
+      }
+
+      else if (name === 'produtoId') {
+        const cleanedValue = String(value).trim();
+        novosItens[index][name] = cleanedValue;
+        const produtoSelecionado = productsList.find(p => String(p._id).trim() === cleanedValue);
+
+        novosItens[index].valorUnitario = Number(produtoSelecionado?.price) || 0.00;
+
+        if (produtoSelecionado && produtoSelecionado.stock_quantity <= 0) {
+          alert("Este produto está sem estoque.");
+          novosItens[index].quantidade = 0;
+        } else {
+          novosItens[index].quantidade = 1;
+        }
+      }
+
+      else {
+        novosItens[index][name] = value;
+      }
+
+      return novosItens;
     });
-  }, []);
+  }, [filteredProdutos]);
 
   const handleAddItem = () => {
-    if (formData.fornecedorId) {
-        setItensPedido([...itensPedido, { produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
-    } else {
-        setMessage({ type: 'warning', text: 'Selecione um Fornecedor antes de adicionar itens.' });
+    if (!formData.fornecedorId) {
+      setMessage({ type: 'warning', text: 'Selecione um Fornecedor antes de adicionar itens.' });
+      return;
     }
+    setItensPedido(prev => [...prev, { produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
   };
 
   const handleRemoveItem = (index) => {
     const novosItens = itensPedido.filter((_, i) => i !== index);
-    if (novosItens.length === 0) {
-        setItensPedido([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
-    } else {
-        setItensPedido(novosItens);
-    }
+    setItensPedido(novosItens.length ? novosItens : [{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
   };
 
   const calcularTotal = () => {
-    return itensPedido.reduce((total, item) => {
-      return total + (item.quantidade * item.valorUnitario);
-    }, 0);
+    return itensPedido.reduce((total, item) => total + ((Number(item.quantidade) || 0) * (Number(item.valorUnitario) || 0)), 0);
   };
 
-  // --- 4. Submit ---
+  const getProductStock = (prodId) => {
+    const p = filteredProdutos.find(x => String(x._id) === String(prodId));
+    return p ? p.stock_quantity : 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
-    if (!formData.fornecedorId) {
-        setMessage({ type: 'error', text: 'Selecione um Fornecedor.' });
+    for (const item of itensPedido) {
+      const prod = filteredProdutos.find(p => String(p._id) === String(item.produtoId));
+      if (prod && item.quantidade > prod.stock_quantity) {
+        setMessage({ type: 'error', text: `Erro: O produto "${prod.name}" tem apenas ${prod.stock_quantity} em estoque.` });
         setLoading(false);
         return;
+      }
     }
 
-    // Filtra itens vazios
-    const itensValidos = itensPedido.filter(item => item.produtoId && item.quantidade > 0);
+    if (!formData.fornecedorId) {
+      setMessage({ type: 'error', text: 'Selecione um Fornecedor.' });
+      setLoading(false);
+      return;
+    }
+
+    const itensValidos = itensPedido.map(i => ({
+      ...i,
+      quantidade: Number(i.quantidade) || 0,
+      unit_price: Number(i.valorUnitario) || 0
+    }))
+    .filter(item => item.produtoId && item.quantidade > 0);
 
     if (itensValidos.length === 0) {
-        setMessage({ type: 'error', text: 'Adicione pelo menos um produto válido ao pedido.' });
-        setLoading(false);
-        return;
+      setMessage({ type: 'error', text: 'Adicione pelo menos um produto válido ao pedido.' });
+      setLoading(false);
+      return;
     }
 
+    const totalCalculado = calcularTotal();
+
     const pedidoParaBackend = {
-        supplier_id: formData.fornecedorId,
-        order_date: formData.dataPedido,
-        status: formData.status,
-        notes: formData.observacoes,
-        items: itensValidos.map(item => ({
-            product_id: item.produtoId,
-            quantity: item.quantidade,
-            unit_price: item.valorUnitario
-        })),
-        total_amount: calcularTotal()
+      supplier_id: formData.fornecedorId,
+      order_date: formData.dataPedido,
+      status: formData.status,
+      notes: formData.observacoes,
+      items: itensValidos.map(item => ({
+        product_id: item.produtoId,
+        quantity: item.quantidade,
+        unit_price: item.unit_price
+      })),
+      total_amount: totalCalculado
     };
 
     try {
       const response = await api.post('/api/pedidos', pedidoParaBackend);
-      setMessage({ type: 'success', text: `✅ Pedido criado com sucesso! Total: R$ ${calcularTotal().toFixed(2)}` });
+      setMessage({ type: 'success', text: ` Pedido #${String(response.data._id || '').substring(0, 8)} criado com sucesso! Total: R$ ${formatCurrency(totalCalculado)}` });
 
-      // Resetar form
-      setFormData({
-        fornecedorId: '',
-        dataPedido: new Date().toISOString().substring(0, 10),
-        status: 'Pendente',
-        observacoes: ''
-      });
-      // filteredProdutos será limpo pelo useEffect quando o fornecedorId ficar vazio
+      setFormData({ fornecedorId: '', dataPedido: new Date().toISOString().substring(0, 10), status: 'Pendente', observacoes: '' });
+      setItensPedido([{ produtoId: '', quantidade: 1, valorUnitario: 0.00 }]);
 
     } catch (error) {
-      console.error("Erro ao cadastrar Pedido:", error);
-      const errorMessage = error.response?.data?.error || "Erro ao criar pedido.";
-      setMessage({ type: 'error', text: `❌ Erro: ${errorMessage}` });
+      console.error('Erro ao cadastrar Pedido:', error);
+      const errorMessage = error.response?.data?.error || 'Erro ao criar pedido.';
+      setMessage({ type: 'error', text: ` Erro: ${errorMessage}` });
     } finally {
       setLoading(false);
     }
   };
 
-  // --- 5. Render ---
   if (loadingData) {
     return (
       <div className={styles['dashboard-container']}>
+        <nav className={styles.sidebar}>
+          <ul>
+            <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
+          </ul>
+        </nav>
         <main className={styles['main-content']}>
-          <p className={styles.loadingMessage}>Carregando...</p>
+          <p>Carregando...</p>
         </main>
       </div>
     );
   }
 
-  // Define se o dropdown de produtos deve estar travado
   const isProductSelectionDisabled = !formData.fornecedorId;
 
   return (
     <div className={styles['dashboard-container']}>
-      {/* SIDEBAR */}
       <nav className={styles.sidebar}>
         <ul>
           <li><Link href="/admin/Dashboard" className={styles.linkReset}><div className={styles.menuItem}><FiGrid size={20} /><span>Dashboard</span></div></Link></li>
-          <li className={styles.active}><Link href="/admin/CadastroPedido" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Cadastrar Pedido</span></div></Link></li>
-          <li><Link href="/admin/GerenciarPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Gerenciar Pedidos</span></div></Link></li>
-          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Cadastrar Produtos</span></div></Link></li>
-          <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li>
+          <li><Link href="/admin/CadastroFornecedor" className={styles.linkReset}><div className={styles.menuItem}><FiUsers size={20} /><span>Fornecedores</span></div></Link></li>
+          <li><Link href="/admin/CadastroLogista" className={styles.linkReset}><div className={styles.menuItem}><FiBox size={20} /><span>Lojistas</span></div></Link></li>
+          <li><Link href="/admin/CadastroProduto" className={styles.linkReset}><div className={styles.menuItem}><FiPackage size={20} /><span>Produtos</span></div></Link></li>
+          <li className={styles.active}><Link href="/admin/CadastroPedidos" className={styles.linkReset}><div className={styles.menuItem}><FiShoppingBag size={20} /><span>Pedidos</span></div></Link></li>
+          <li><Link href="/admin/CadastroCampanha" className={styles.linkReset}><div className={styles.menuItem}><FiTag size={20} /><span>Campanhas</span></div></Link></li>
+       {/*   <li><Link href="/admin/perfil" className={styles.linkReset}><div className={styles.menuItem}><FiUser size={20} /><span>Perfil</span></div></Link></li> */}
           <li><Link href="/Login" className={styles.linkReset}><div className={styles.menuItem}><FiLogOut size={20} /><span>Sair</span></div></Link></li>
         </ul>
       </nav>
 
       <main className={styles['main-content']}>
-        <header className={styles.header}>
-          <h1>Cadastrar Novo Pedido</h1>
-        </header>
+        <header className={styles.header}><h1>Cadastrar Novo Pedido</h1></header>
 
-        {message && (
-          <div className={`${styles.alertMessage} ${styles[message.type]}`}>
-            {message.text}
-          </div>
-        )}
+        {message && (<div className={`${styles.alertMessage} ${styles[message.type]}`}>{message.text}</div>)}
 
         <form className={styles.formCard} onSubmit={handleSubmit}>
           <h2 className={styles.sectionTitle}>Dados do Pedido</h2>
+
           <div className={styles.row}>
-             <div className={styles.fieldGroup}>
-                <label>Fornecedor <span className={styles.requiredAsterisk}>*</span></label>
-                <select
-                    name="fornecedorId"
-                    value={formData.fornecedorId}
-                    onChange={handleChange}
-                    className={styles.inputMedium}
-                    required
-                >
-                    <option value="" disabled>Selecione um fornecedor</option>
-                    {fornecedores.map(f => (
-                        <option key={f._id} value={f._id}>{f.supplier_name}</option>
-                    ))}
-                </select>
+            <div className={styles.fieldGroup}>
+              <label>Fornecedor <span className={styles.requiredAsterisk}>*</span></label>
+              <select name="fornecedorId" value={formData.fornecedorId} onChange={handleChange} className={styles.inputLong} required>
+                <option value="" disabled>Selecione um fornecedor</option>
+                {fornecedores.map(f => <option key={String(f._id)} value={String(f._id)}>{f.supplier_name}</option>)}
+              </select>
             </div>
 
             <div className={styles.fieldGroup}>
-                <label>Data do Pedido</label>
-                <input
-                    type="date"
-                    name="dataPedido"
-                    value={formData.dataPedido}
-                    onChange={handleChange}
-                    className={styles.inputMedium}
-                    required
-                />
+              <label>Data do Pedido</label>
+              <input type="date" name="dataPedido" value={formData.dataPedido} onChange={handleChange} className={styles.inputLong} required />
             </div>
           </div>
 
-          <div className={styles.fieldGroup}>
-              <label>Status Inicial</label>
-              <select name="status" value={formData.status} onChange={handleChange} className={styles.inputSmall}>
-                  <option value="Pendente">Pendente</option>
-                  <option value="Enviado">Enviado</option>
-                  <option value="Entregue">Entregue</option>
-                  <option value="Cancelado">Cancelado</option>
-              </select>
+          <div className={styles.fieldGroup} style={{ maxWidth: 300 }}>
+            <label>Status Inicial</label>
+            <select name="status" value={formData.status} onChange={handleChange} className={styles.inputLong}>
+              <option value="Pendente">Pendente</option>
+              <option value="Enviado">Enviado</option>
+              <option value="Entregue">Entregue</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
           </div>
 
           <hr className={styles.divider} />
 
           <h2 className={styles.sectionTitle}>Itens do Pedido</h2>
 
-          {/* Aviso se nenhum fornecedor foi selecionado */}
-          {isProductSelectionDisabled && (
-              <p className={styles.warningMessage} style={{ color: '#d97706', marginBottom: '10px' }}>
-                  ⚠️ Selecione um <strong>Fornecedor</strong> acima para liberar a lista de produtos.
-              </p>
-          )}
+          {isProductSelectionDisabled && (<p className={`${styles.alertMessage} ${styles.info}`} style={{ marginBottom: 15 }}>⚠️ Selecione um <strong>Fornecedor</strong> acima para liberar a lista de produtos.</p>)}
+
+          <div className={styles.itemGridHeader}>
+            <div className={styles.colProductHeader}>Produto</div>
+            <div className={`${styles.colTinyHeader} ${styles.alignRight}`}>Qtd.</div>
+            <div className={`${styles.colTinyHeader} ${styles.alignRight}`}>Valor Unit. (R$)</div>
+            <div className={styles.colTotalHeader}>Total Item</div>
+            <div className={styles.colRemoveButtonPlaceholder}></div>
+          </div>
 
           {itensPedido.map((item, index) => (
-            <div key={index} className={styles.itemRow}>
-                <div className={styles.fieldGroupItem}>
-                    <label>Produto <span className={styles.requiredAsterisk}>*</span></label>
-                    <CustomProductDropdown
-                        options={filteredProdutos}
-                        value={item.produtoId}
-                        onChange={(e) => handleItemChange(index, e, filteredProdutos)}
-                        placeholder={isProductSelectionDisabled ? "Selecione o Fornecedor" : "Selecione um produto"}
-                        className={styles.inputLong}
-                        required={true}
-                        index={index}
-                        disabled={isProductSelectionDisabled}
-                    />
-                </div>
+            <div key={index} className={styles.itemGridRow}>
 
-                <div className={styles.fieldGroupItem}>
-                    <label>Qtd.</label>
-                    <input
-                        type="number"
-                        name="quantidade"
-                        value={item.quantidade}
-                        onChange={(e) => handleItemChange(index, e, filteredProdutos)}
-                        min="1"
-                        className={styles.inputTiny}
-                        required
-                        disabled={isProductSelectionDisabled}
-                    />
-                </div>
+              <div className={styles.colProductInput}>
+                <CustomProductDropdown
+                  options={filteredProdutos}
+                  value={item.produtoId}
+                  onChange={(e) => handleItemChange(index, e, filteredProdutos)}
+                  placeholder={isProductSelectionDisabled ? 'Fornecedor não selecionado' : 'Selecione um produto'}
+                  required
+                  index={index}
+                  disabled={isProductSelectionDisabled}
+                />
+                {item.produtoId && (
+                  <div className={styles.stockInfo}>
+                    Estoque disponível: <strong>{getProductStock(item.produtoId)}</strong>
+                  </div>
+                )}
+              </div>
 
-                <div className={styles.fieldGroupItem}>
-                    <label>Valor Unit. (R$)</label>
-                    <input
-                        type="number"
-                        name="valorUnitario"
-                        value={item.valorUnitario}
-                        onChange={(e) => handleItemChange(index, e, filteredProdutos)}
-                        step="0.01"
-                        min="0"
-                        className={styles.inputTiny}
-                        disabled={isProductSelectionDisabled}
-                    />
-                </div>
 
-                <div className={styles.fieldGroupItemTotal}>
-                    <label>Total</label>
-                    <p className={styles.totalItem}>R$ {(item.quantidade * item.valorUnitario).toFixed(2).replace('.', ',')}</p>
-                </div>
+              <div className={styles.colTinyInput}>
+                <input
+                  type="number"
+                  name="quantidade"
+                  value={item.quantidade}
+                  onChange={(e) => handleItemChange(index, e, filteredProdutos)}
+                  min="1"
+                  max={getProductStock(item.produtoId)}
+                  className={styles.inputItem}
+                  required
+                  disabled={!item.produtoId}
+                />
+              </div>
 
-                <button
-                    type="button"
-                    className={styles.removeItemButton}
-                    onClick={() => handleRemoveItem(index)}
-                    disabled={itensPedido.length === 1 || isProductSelectionDisabled}
-                >
-                    <FiTrash2 size={18} />
-                </button>
+
+              <div className={styles.colTinyInput}>
+                <input
+                  type="text"
+                  name="valorUnitario"
+                  value={formatCurrency(item.valorUnitario)}
+                  readOnly
+                  className={`${styles.inputItem} ${styles.inputReadOnly}`}
+                  tabIndex="-1"
+                />
+              </div>
+
+
+              <div className={styles.colTotalDisplay}>
+                <p className={styles.totalItem}>R$ {formatCurrency((Number(item.quantidade) || 0) * (Number(item.valorUnitario) || 0))}</p>
+              </div>
+
+
+              <button type="button" className={styles.removeItemButton} onClick={() => handleRemoveItem(index)} disabled={itensPedido.length === 1 || isProductSelectionDisabled} title={itensPedido.length === 1 ? 'O pedido deve ter pelo menos um item' : 'Remover item'}>
+                <FiTrash2 size={16} />
+              </button>
             </div>
           ))}
 
           <div className={styles.addItemSection}>
-            <button type="button" className={styles.addItemButton} onClick={handleAddItem} disabled={isProductSelectionDisabled}>
-              <FiPlus size={18} /> Adicionar Novo Item
-            </button>
+            <button type="button" className={styles.addItemButton} onClick={handleAddItem} disabled={isProductSelectionDisabled || filteredProdutos.length === 0}><FiPlus size={16} /> Adicionar Novo Item</button>
+            {filteredProdutos.length === 0 && formData.fornecedorId && (<p className={styles.noProductsMessage}>⚠️ Este fornecedor não possui produtos **ativos** cadastrados.</p>)}
           </div>
 
           <div className={styles.totalPedidoContainer}>
-              <p className={styles.totalLabel}>Total do Pedido:</p>
-              <p className={styles.totalValue}>R$ {calcularTotal().toFixed(2).replace('.', ',')}</p>
+            <p className={styles.totalLabel}>Total do Pedido:</p>
+            <p className={styles.totalValue}>R$ {formatCurrency(calcularTotal())}</p>
           </div>
 
           <hr className={styles.divider} />
 
           <h2 className={styles.sectionTitle}>Observações</h2>
           <div className={styles.fieldGroup}>
-              <textarea
-                  name="observacoes"
-                  value={formData.observacoes}
-                  onChange={handleChange}
-                  className={styles.textareaLong}
-                  rows="3"
-                  placeholder="Notas internas..."
-              />
+            <textarea name="observacoes" value={formData.observacoes} onChange={handleChange} className={styles.textareaLong} rows="3" placeholder="Notas internas..." />
           </div>
 
           <div className={styles.footer}>
-            <button type="submit" className={styles.submitButton} disabled={loading || isProductSelectionDisabled}>
-              {loading ? 'Processando...' : 'Salvar Novo Pedido'}
-            </button>
+            <button type="submit" className={styles.submitButton} disabled={loading || isProductSelectionDisabled}>{loading ? 'Processando...' : 'Salvar Novo Pedido'}</button>
           </div>
         </form>
+
+        <div style={{ marginTop: 28 }}>
+          <BuscaPedidos allFornecedores={fornecedores} allProdutos={produtos} />
+        </div>
       </main>
     </div>
   );
 };
 
-export default CadastroPedido;
+export default withAuth (CadastroPedido);

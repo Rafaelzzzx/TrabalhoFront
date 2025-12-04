@@ -1,0 +1,451 @@
+/* Arquivo: src/styles/lojas.module.css */
+
+/* =======================================================
+   LAYOUT GERAL
+   ======================================================= */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #f4f7fa; /* Fundo cinza bem claro */
+}
+
+/* --- Sidebar (Menu Lateral) --- */
+.sidebar {
+  width: 260px;
+  background-color: #0c2b4e; /* Azul Escuro */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  flex-shrink: 0; /* Impede a sidebar de encolher */
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 30px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #b0c4de; /* Azul claro acinzentado para itens inativos */
+}
+
+.sidebar li:hover .menuItem {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.active .menuItem {
+  background-color: #ffffff;
+  color: #0c2b4e; /* Texto azul escuro no item ativo */
+  font-weight: 700;
+  border-left: 5px solid #1890ff; /* Detalhe azul brilhante */
+}
+
+.linkReset {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  width: 100%;
+}
+
+/* --- Conteúdo Principal --- */
+.main-content {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto; /* Permite rolar se o conteúdo for grande */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-size: 28px;
+  color: #1f1f1f;
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.profile-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #555;
+  font-weight: 500;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* =======================================================
+   DASHBOARD (CARDS & CHART)
+   ======================================================= */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+  border-left: 4px solid #0c2b4e; /* Detalhe visual */
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+/* =======================================================
+   TABELA DE PEDIDOS (DASHBOARD)
+   ======================================================= */
+.orders-table-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.orders-table-section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #333;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.orders-table th {
+  text-align: left;
+  padding: 15px;
+  background-color: #f8f9fa;
+  color: #666;
+  font-weight: 600;
+  border-bottom: 2px solid #eee;
+}
+
+.orders-table td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  color: #444;
+}
+
+.orders-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* =======================================================
+   ÁREA DE BUSCA (FORNECEDORES)
+   ======================================================= */
+.search-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+
+.search-header {
+  margin-top: 0;
+  font-size: 18px;
+  color: #0c2b4e;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.search-inputs {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.search-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.search-group input {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: border 0.2s;
+}
+
+.search-group input:focus {
+  outline: none;
+  border-color: #0c2b4e;
+  box-shadow: 0 0 0 3px rgba(12, 43, 78, 0.1);
+}
+
+.btn-search {
+  background-color: #0c2b4e;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  height: 42px; /* Alinha com os inputs */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.btn-search:hover {
+  background-color: #1a4a7d;
+}
+
+.btn-search:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* =======================================================
+   LISTA / GRID DE FORNECEDORES
+   ======================================================= */
+.provider-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Grid definition: Define as colunas alinhadas */
+.grid-style {
+  display: grid;
+  /* Colunas: Nome (3 partes), ID (1.5), Email (3), Resp (2), Ações (auto) */
+  grid-template-columns: 3fr 1.5fr 3fr 2fr 100px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px 20px;
+}
+
+.provider-list-header {
+  composes: grid-style; /* Herda o grid acima */
+  background-color: #e9ecef;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6c757d;
+  letter-spacing: 0.5px;
+}
+
+.provider-list-item {
+  composes: grid-style; /* Herda o grid acima */
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.provider-list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  border-color: #dbe9f5;
+}
+
+.detail-cell {
+  font-size: 14px;
+  color: #444;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-cell-name {
+  font-weight: 600;
+  color: #0c2b4e;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Botões de Ação */
+.btn-edit {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-edit:hover { background-color: #bbdefb; }
+
+.btn-delete {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-delete:hover { background-color: #ffcdd2; }
+
+/* =======================================================
+   PAGINAÇÃO E MENSAGENS
+   ======================================================= */
+.paginationControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 30px;
+  margin-bottom: 50px;
+}
+
+.nav-btn {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #555;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+  border-color: #0c2b4e;
+  color: #0c2b4e;
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pageInfo {
+  font-size: 14px;
+  color: #777;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  background: white;
+  border-radius: 8px;
+  border: 1px dashed #ddd;
+}
+
+/* =======================================================
+   RESPONSIVIDADE (MOBILE)
+   ======================================================= */
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding-bottom: 10px;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .grid-style {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    padding: 15px;
+  }
+
+  .provider-list-header {
+    display: none; /* Esconde cabeçalho em mobile */
+  }
+
+  .detail-cell {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .detail-cell::before {
+    /* Adiciona label no mobile */
+    content: attr(title);
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 5px;
+  }
+
+  .item-actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 10px;
+    border-top: 1px dashed #eee;
+    padding-top: 10px;
+  }
+}

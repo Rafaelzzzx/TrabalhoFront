@@ -16,7 +16,7 @@ export default function Login() {
       const r = await api.post('/login', {
         contact_email: email,
         pwd: senha,
-        level: levelEscolhido   // ✔ CORRETO
+        level: levelEscolhido
       });
 
       localStorage.setItem("usuario", JSON.stringify(r.data));
@@ -32,7 +32,7 @@ export default function Login() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.loginBox}>   {/* ✔ REMOVIDO <form> */}
+      <div className={styles.loginBox}>
 
         <h1 className={styles.title}>LOGIN</h1>
 
@@ -64,7 +64,7 @@ export default function Login() {
             className={styles.greenButton}
             onClick={() => handleLogin("logista")}
           >
-            Logar como<br />Logista
+            Logar como<br />Lojista
           </button>
 
           <button

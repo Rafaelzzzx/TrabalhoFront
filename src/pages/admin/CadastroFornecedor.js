@@ -663,4 +663,6 @@ function CadastroFornecedor() {
     </div>
   );
 }
+
+
 export default withAuth(CadastroFornecedor);

@@ -32,7 +32,7 @@ export default function Login() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.loginBox}>   {
+      <div className={styles.loginBox}>
 
         <h1 className={styles.title}>LOGIN</h1>
 

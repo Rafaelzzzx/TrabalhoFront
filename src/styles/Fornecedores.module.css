@@ -1,0 +1,300 @@
+/* =============== LAYOUT GERAL =============== */
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f7fa;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Sidebar */
+
+.sidebar {
+    width: 240px;
+    background-color: #0c2b4e;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    flex-shrink: 0;
+}
+
+.sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar ul li {
+    cursor: pointer;
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 500;
+    border-right: 4px solid transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sidebar ul li:hover .menuItem {
+    background-color: #1a4a7d;
+}
+
+.active .menuItem {
+    background-color: #ffffff;
+    color: #0c2b4e;
+    font-weight: 600;
+    border-radius: 8px 0 0 8px;
+    border-right-color: #ffd24c;
+}
+
+/* Conteúdo principal */
+
+.main-content {
+    flex: 1;
+    padding: 30px 40px;
+}
+
+/* =============== TÍTULO =============== */
+
+.pageTitle {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 24px 0;
+}
+
+/* =============== TOOLBAR (busca + filtros + botão) =============== */
+
+.suppliersToolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Busca */
+
+.searchWrapper {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    padding: 6px 14px;
+    min-width: 260px;
+    max-width: 360px;
+}
+
+.searchIcon {
+    margin-right: 8px;
+    color: #6b7280;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #111827;
+    flex: 1;
+    background: transparent;
+}
+
+/* Botão atualizar */
+
+.updateButton {
+    background-color: #0c2b4e;
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.updateButton:hover {
+    background-color: #1a4a7d;
+    transform: translateY(-1px);
+}
+
+/* Chips de filtro */
+
+.filtersRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.filterChip {
+    padding: 6px 18px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
+    font-size: 13px;
+    cursor: pointer;
+    color: #374151;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.filterChip:hover {
+    background-color: #e5e7eb;
+}
+
+.filterChipActive {
+    background-color: #111827;
+    color: #ffffff;
+    border-color: #111827;
+}
+
+/* =============== CARD DE MÉTRICAS =============== */
+
+.suppliersStatsCard {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    padding: 22px 32px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.suppliersStatItem {
+    flex: 1;
+    text-align: center;
+}
+
+.suppliersStatLabel {
+    display: block;
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.suppliersStatValue {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* =============== LISTA DE FORNECEDORES =============== */
+
+.suppliersSection {
+    margin-top: 10px;
+}
+
+.suppliersTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
+}
+
+/* Grid de cards */
+
+.suppliersGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+/* Card individual */
+
+.supplierCard {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid #e5e7eb;
+    transition: box-shadow 0.2s ease, transform 0.1s ease, border-color 0.2s;
+}
+
+.supplierCard:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    border-color: #cbd5f5;
+}
+
+.supplierName {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.supplierLocation {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.supplierCategory {
+    font-size: 13px;
+    color: #374151;
+    margin: 4px 0 10px 0;
+}
+
+/* Botão "Ver Produtos" */
+
+.supplierButton {
+    margin-top: auto;
+    align-self: flex-start;
+    background-color: #275fdc;
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.supplierButton:hover {
+    background-color: #1f4fb5;
+    transform: translateY(-1px);
+}
+
+/* Estado vazio */
+
+.emptyState {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 28px 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Responsivo básico */
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 20px 16px;
+    }
+
+    .suppliersToolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filtersRow {
+        margin-left: 0;
+    }
+
+    .suppliersStatsCard {
+        flex-direction: column;
+        text-align: center;
+    }
+}

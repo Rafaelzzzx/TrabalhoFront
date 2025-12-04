@@ -289,6 +289,202 @@
   padding: 0;
 }
 
+
+/* --- ESPECIFO DO FORNECEDOR A APRTE DE CANPANHAS ATIVAS. Main Content específico do fornecedor  --- */
+.mainContent {
+    flex: 1;
+    padding: 30px 40px;
+    overflow-y: auto;
+    background-color: #f4f7fa;
+}
+
+.mtAuto {
+    margin-top: auto;
+    margin-bottom: 2rem;
+}
+
+/* Stats em linha (se você quiser usar o statsGrid) */
+.statsGrid {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.statCard {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.statCard h3 {
+    font-size: 16px;
+    color: #666;
+    margin: 0 0 10px 0;
+    font-weight: 500;
+}
+
+.statCard p {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+/* Container da tabela tipo planilha */
+.sectionContainer {
+}
+
+.sectionContainer h2 {
+    font-size: 20px;
+    margin: 0 0 20px 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.tableWrapper {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: none;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+/* Cabeçalho A B C D */
+.spreadsheetHeader {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 1fr 1fr;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    font-size: 0.8rem;
+    color: #888;
+    text-align: center;
+}
+
+.colIndex {
+}
+
+.col {
+    padding: 5px;
+    border-right: 1px solid #eee;
+}
+
+/* Tabela interna */
+.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dataTable th,
+.dataTable td {
+    text-align: left;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    border-right: 1px solid transparent;
+}
+
+.dataTable th {
+    background-color: #f9f9f9;
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.dataTable td {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Números de linha tipo Excel */
+.rowNum {
+    background-color: #f5f5f5;
+    width: 40px;
+    text-align: center !important;
+    color: #777;
+    font-size: 0.8rem;
+}
+
+/* Campanhas Ativas */
+.campaignSection {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.campaignCard {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ddd;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.campaignCard h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: #333;
+}
+
+.campaignCard h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.campaignCard p {
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 18px;
+    color: #555;
+}
+
+.campaignActions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Botões de campanha */
+.btnPrimary {
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #0c2b4e;
+    color: white;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+.btnPrimary:hover {
+    background-color: #1a4a7d;
+}
+
+.btnText {
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: transparent;
+    color: #333;
+    border: none;
+}
+
+.btnText:hover {
+    background-color: #f4f7fa;
+}
 .grid-style {
   display: grid;
   /* 5 Colunas: Nome | ID | Email | Responsável | Ações */
@@ -973,4 +1169,186 @@
 .formCard select:focus {
     z-index: 10; /* Garante que o dropdown flutue sobre outros elementos, pode ajudar no posicionamento */
 }
+
+/* =======================================================
+   CAMPANHAS - RESUMO, BUSCA E TABELA
+   ======================================================= */
+
+.summarySection {
+    margin-bottom: 25px;
+}
+
+.summaryBox {
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.summaryColumn {
+    flex: 1;
+    text-align: center;
+}
+
+.summaryLabel {
+    display: block;
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.summaryValue {
+    font-size: 32px;
+    font-weight: bold;
+    color: #111827;
+}
+
+/* Ações: busca + botão Nova Campanha */
+
+.actionsSection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0 15px 0;
+}
+
+.searchWrapper {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    padding: 6px 16px;
+    min-width: 280px;
+}
+
+.searchIconCircle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    margin-right: 10px;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #444;
+    flex: 1;
+}
+
+.newCampaignButton {
+    background-color: #275fdc;
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 26px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.newCampaignButton:hover {
+    background-color: #1f4fb5;
+}
+
+/* Tabela de campanhas */
+
+.tableSection {
+    margin-top: 10px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.table th,
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.table th {
+    background-color: #f9f9f9;
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.table td {
+    font-size: 14px;
+    color: #555;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+/* estado vazio */
+.emptyState {
+    text-align: center;
+    padding: 20px;
+    color: #888;
+    font-size: 14px;
+}
+
+/* ===== Cabeçalho "Meus Produtos" + botão ===== */
+
+.productsHeaderSection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+
+.productsHeaderSection h2 {
+    font-size: 22px;
+    color: #333;
+    margin: 0;
+}
+
+/* ===== Filtros Pedidos Recebidos (Todos / Pendentes / Enviados) ===== */
+
+.filtersSection {
+    margin-bottom: 20px;
+}
+
+.filterButtons {
+    display: flex;
+    gap: 12px;
+}
+
+.filterButton {
+    padding: 8px 22px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
+    font-size: 14px;
+    cursor: pointer;
+    color: #374151;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.filterButton:hover {
+    background-color: #e5e7eb;
+}
+
+.filterButtonActive {
+    background-color: #111827;
+    color: #ffffff;
+    border-color: #111827;
+}
+
 

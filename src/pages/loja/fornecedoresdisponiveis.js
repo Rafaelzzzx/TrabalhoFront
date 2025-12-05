@@ -5,14 +5,8 @@ import styles from '@/styles/lojas.module.css';
 import api from '@/services/api';
 
 import {
-  FiGrid,
-  FiBox,
-  FiShoppingBag,
-  FiLogOut,
-  FiTruck,
-  FiCheckCircle,
-  FiXCircle,
-  FiPlay
+  FiGrid, FiSearch, FiPackage, FiUser, FiLogOut,
+  FiChevronLeft, FiChevronRight, FiList
 } from 'react-icons/fi';
 
 const Fornecedor = () => {
@@ -263,20 +257,50 @@ const Fornecedor = () => {
   return (
     <div className={styles['dashboard-container']}>
       {/* SIDEBAR */}
-      <nav className={styles.sidebar}>
+     <nav className={styles.sidebar}>
         <ul>
-          <li className={activeView === 'dashboard' ? styles.active : ''} onClick={() => setActiveView('dashboard')}>
-            <div className={styles.menuItem}><FiGrid /> <span>Dashboard</span></div>
+          {/* 1. Dashboard */}
+          <li>
+            <Link href="/loja/dashboard" className={styles.linkReset}>
+              <div className={styles.menuItem}>
+                <FiGrid size={20} /><span>Dashboard</span>
+              </div>
+            </Link>
           </li>
-          <li className={activeView === 'produtos' ? styles.active : ''} onClick={() => setActiveView('produtos')}>
-            <div className={styles.menuItem}><FiBox /> <span>Meus Produtos</span></div>
+
+          {/* 2. Buscar Fornecedores (ATIVO) */}
+          <li className={styles.active}>
+            <Link href="/loja/fornecedoresdisponiveis" className={styles.linkReset}>
+              <div className={styles.menuItem}>
+                <FiSearch size={20} /><span>Buscar Fornecedores</span>
+              </div>
+            </Link>
           </li>
-          <li className={activeView === 'pedidos' ? styles.active : ''} onClick={() => setActiveView('pedidos')}>
-            <div className={styles.menuItem}><FiShoppingBag /> <span>Pedidos Recebidos</span></div>
+
+          {/* 3. Meus Pedidos */}
+          <li>
+            <Link href="/loja/pedidos" className={styles.linkReset}>
+              <div className={styles.menuItem}>
+                <FiPackage size={20} /><span>Meus Pedidos</span>
+              </div>
+            </Link>
           </li>
+
+          {/* 4. Perfil */}
+          <li>
+            <Link href="/loja/perfil" className={styles.linkReset}>
+              <div className={styles.menuItem}>
+                <FiUser size={20} /><span>Meu Perfil</span>
+              </div>
+            </Link>
+          </li>
+
+          {/* 5. Sair */}
           <li>
             <Link href="/" className={styles.linkReset}>
-              <div className={styles.menuItem}><FiLogOut /> <span>Sair</span></div>
+              <div className={styles.menuItem}>
+                <FiLogOut size={20} /><span>Sair</span>
+              </div>
             </Link>
           </li>
         </ul>

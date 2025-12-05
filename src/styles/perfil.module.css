@@ -1,0 +1,191 @@
+/* Layout Geral */
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f6f8; /* Fundo cinza bem claro */
+  font-family: 'Inter', sans-serif;
+}
+
+/* Sidebar (Menu Lateral) */
+.sidebar {
+  width: 260px;
+  background-color: #2e4a85; /* Azul específico da imagem */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: 25px;
+  flex-shrink: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #dbe9f5; /* Azul bem claro para texto inativo */
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.menuItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Item ativo com borda esquerda */
+.active .menuItem {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 700;
+  border-left: 4px solid #fff;
+}
+
+.linkReset {
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  display: block;
+}
+
+/* Conteúdo Principal */
+.content {
+  flex: 1;
+  padding: 40px 60px;
+  overflow-y: auto;
+}
+
+.pageHeader {
+  margin-bottom: 30px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 800; /* Fonte mais grossa como na imagem */
+  color: #1f2937;
+  margin: 0 0 10px 0;
+}
+
+.pageSubtitle {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+/* Card do Formulário */
+.formCard {
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px; /* O card é levemente arredondado */
+  padding: 40px;
+  max-width: 900px; /* Largura controlada */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.cardTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000;
+  margin-top: 0;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Grid do Formulário */
+.row {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 250px; /* Garante responsividade */
+}
+
+.fieldGroup label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+/* Inputs Estilo "Pílula" (Arredondados) */
+.input {
+  padding: 12px 20px;
+  border: 1px solid #999; /* Borda cinza médio */
+  border-radius: 25px; /* Arredondamento forte igual imagem */
+  background-color: #fdfdfd;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  border-color: #2e4a85;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(46, 74, 133, 0.1);
+}
+
+.input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  color: #888;
+  border-color: #ddd;
+}
+
+/* Botão Salvar */
+.saveButton {
+  background-color: #2e4a85; /* Azul da imagem */
+  color: white;
+  border: none;
+  border-radius: 25px; /* Botão arredondado */
+  padding: 14px 35px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover {
+  background-color: #1a3a6e;
+}
+
+.saveButton:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Mensagens de Feedback */
+.message {
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; }
+  .content { padding: 20px; }
+  .row { flex-direction: column; gap: 15px; }
+  .fieldGroup { width: 100%; }
+}

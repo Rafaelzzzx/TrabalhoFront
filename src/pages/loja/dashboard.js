@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router'; // Importante para o menu funcionar
 
-import styles from '@/styles/lojas.module.css';
+import styles from '@/styles/lojas.module.css'; // Confirme se o caminho do CSS está certo
 import api from '@/services/api';
 
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiUserCheck,
-  FiSearch, FiTrash2, FiEdit, FiChevronLeft, FiChevronRight
+  FiSearch
 } from 'react-icons/fi';
 
-const Loja = () => {
+const DashboardLoja = () => {
+  const router = useRouter();
 
-  const [activeView, setActiveView] = useState('dashboard');
-
-
+  // --- Lógica do Dashboard ---
   const [dashboardData, setDashboardData] = useState({
     totalRealizados: 0,
     valorTotal: 0,
@@ -34,7 +34,7 @@ const Loja = () => {
         ).length;
 
         setDashboardData({ totalRealizados, valorTotal, totalPendentes });
-        setPedidosRecentes(lista.slice(0, 5)); // Pega apenas os 5 últimos para a home
+        setPedidosRecentes(lista.slice(0, 5)); // Pega apenas os 5 últimos
       } catch (error) {
         console.error("Erro dashboard:", error);
       }
@@ -42,279 +42,49 @@ const Loja = () => {
     fetchDashboard();
   }, []);
 
-
-  const [fornecedores, setFornecedores] = useState([]);
-  const [loadingForn, setLoadingForn] = useState(false);
-
-
-  const [buscaId, setBuscaId] = useState('');
-  const [buscaNome, setBuscaNome] = useState('');
-  const [buscaEmail, setBuscaEmail] = useState('');
-
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
-  const buscarFornecedores = async () => {
-    setLoadingForn(true);
-    setCurrentPage(1);
-    try {
-
-      const response = await api.get('/cadastroFornecedor');
-      let dados = response.data || [];
-
-      if (buscaId) dados = dados.filter(f => f._id.includes(buscaId));
-      if (buscaNome) dados = dados.filter(f => f.supplier_name.toLowerCase().includes(buscaNome.toLowerCase()));
-      if (buscaEmail) dados = dados.filter(f => f.contact_email.toLowerCase().includes(buscaEmail.toLowerCase()));
-
-      setFornecedores(dados);
-    } catch (error) {
-      console.error("Erro busca:", error);
-      alert("Erro ao buscar fornecedores");
-    } finally {
-      setLoadingForn(false);
-    }
-  };
-
-  const deletarFornecedor = async (id) => {
-    if (!window.confirm("Tem certeza que deseja excluir?")) return;
-    try {
-      await api.delete(`/cadastroFornecedor/${id}`);
-      setFornecedores(prev => prev.filter(item => item._id !== id));
-      alert("Removido com sucesso!");
-    } catch (error) {
-      alert("Erro ao remover.");
-    }
-  };
-
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentFornecedores = fornecedores.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(fornecedores.length / itemsPerPage);
-
-
-
-  const renderDashboard = () => (
-    <>
-      <header className={styles.header}>
-        <h1>DASHBOARD</h1>
-        <div className={styles['profile-area']}>
-          <FiUserCheck size={24} />
-          <span>Visão Geral</span>
-        </div>
-      </header>
-
-
-      <section className={styles['dashboard-cards']}>
-        <div className={styles.card}>
-          <h3>Pedidos Realizados</h3>
-          <p>{dashboardData.totalRealizados}</p>
-        </div>
-        <div className={styles.card}>
-          <h3>Valor Total</h3>
-          <p>
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(dashboardData.valorTotal)}
-          </p>
-        </div>
-        <div className={styles.card}>
-          <h3>Pendentes</h3>
-          <p>{dashboardData.totalPendentes}</p>
-        </div>
-      </section>
-
-
-      <section className={styles['orders-table-section']}>
-        <h2>Últimos Pedidos</h2>
-        <table className={styles['orders-table']}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Loja/Ref</th>
-              <th>Valor</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pedidosRecentes.map((pedido) => (
-              <tr key={pedido._id}>
-                <td>{pedido._id}</td>
-                <td>{pedido.store_id}</td>
-                <td>
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pedido.total_amount)}
-                </td>
-                <td>{pedido.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    </>
-  );
-
-  const renderFornecedores = () => (
-    <>
-      <header className={styles.header}>
-        <h1>FORNECEDORES</h1>
-      </header>
-
-
-      <div className={styles['search-section']}>
-        <h3 className={styles['search-header']}>Filtrar Fornecedores</h3>
-
-        <div className={styles['search-inputs']}>
-          <div className={styles['search-group']}>
-            <label>ID</label>
-            <input
-              type="text"
-              placeholder="Ex: 64a..."
-              value={buscaId}
-              onChange={e => setBuscaId(e.target.value)}
-            />
-          </div>
-          <div className={styles['search-group']}>
-            <label>Nome</label>
-            <input
-              type="text"
-              placeholder="Nome do fornecedor"
-              value={buscaNome}
-              onChange={e => setBuscaNome(e.target.value)}
-            />
-          </div>
-          <div className={styles['search-group']}>
-            <label>Email</label>
-            <input
-              type="text"
-              placeholder="email@exemplo.com"
-              value={buscaEmail}
-              onChange={e => setBuscaEmail(e.target.value)}
-            />
-          </div>
-
-          <button className={styles['btn-search']} onClick={buscarFornecedores} disabled={loadingForn}>
-             <FiSearch /> {loadingForn ? 'Buscando...' : 'Buscar'}
-          </button>
-        </div>
-      </div>
-
-
-      {fornecedores.length > 0 && (
-        <div className={styles['provider-list-container']}>
-
-
-          <div className={styles['provider-list-header']}>
-            <div className={styles['header-cell']}>NOME</div>
-            <div className={styles['header-cell']}>ID</div>
-            <div className={styles['header-cell']}>EMAIL</div>
-            <div className={styles['header-cell']}>RESPONSÁVEL</div>
-            <div className={styles['header-cell-actions']}>AÇÕES</div>
-          </div>
-
-
-          {currentFornecedores.map((item) => (
-            <div key={item._id} className={styles['provider-list-item']}>
-              <div className={`${styles['detail-cell']} ${styles['detail-cell-name']}`}>
-                <p>{item.supplier_name}</p>
-              </div>
-              <div className={styles['detail-cell']} title={item._id}>
-                {item._id.substring(0, 8)}...
-              </div>
-              <div className={styles['detail-cell']}>
-                {item.contact_email}
-              </div>
-              <div className={styles['detail-cell']}>
-                {item.responsavel || '-'}
-              </div>
-
-              <div className={styles['item-actions']}>
-                <button className={styles['btn-edit']} title="Editar">
-                  <FiEdit />
-                </button>
-                <button
-                  className={styles['btn-delete']}
-                  onClick={() => deletarFornecedor(item._id)}
-                  title="Excluir"
-                >
-                  <FiTrash2 />
-                </button>
-              </div>
-            </div>
-          ))}
-
-
-          <div className={styles.paginationControls}>
-            <button
-              className={styles['nav-btn']}
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              <FiChevronLeft /> Anterior
-            </button>
-            <span className={styles.pageInfo}>
-              Página {currentPage} de {totalPages}
-            </span>
-            <button
-              className={styles['nav-btn']}
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Próximo <FiChevronRight />
-            </button>
-          </div>
-
-        </div>
-      )}
-
-      {!loadingForn && fornecedores.length === 0 && (
-        <div className={styles['no-data']}>
-          Nenhum fornecedor encontrado ou busca não realizada.
-        </div>
-      )}
-    </>
-  );
-
-
   return (
     <div className={styles['dashboard-container']}>
 
-
+      {/* --- SIDEBAR CORRIGIDA --- */}
       <nav className={styles.sidebar}>
         <ul>
-          <li
-            className={activeView === 'dashboard' ? styles.active : ''}
-            onClick={() => setActiveView('dashboard')}
-          >
-            <div className={styles.menuItem}>
-              <FiGrid size={20} /><span>Dashboard</span>
-            </div>
-          </li>
-
-          <li
-            className={activeView === 'fornecedores' ? styles.active : ''}
-            onClick={() => setActiveView('fornecedores')}
-          >
-            <div className={styles.menuItem}>
-              <FiUsers size={20} /><span>Fornecedores</span>
-            </div>
-          </li>
-
-
-          <li>
-            <Link href="/admin/pedidos" className={styles.linkReset}>
+          {/* 1. Dashboard (Ativo) */}
+          <li className={styles.active}>
+            <Link href="/loja/dashboard" className={styles.linkReset}>
               <div className={styles.menuItem}>
-                <FiPackage size={20} /><span>Pedidos</span>
+                <FiGrid size={20} /><span>Dashboard</span>
               </div>
             </Link>
           </li>
 
+          {/* 2. Buscar Fornecedores */}
           <li>
-            <Link href="/admin/perfil" className={styles.linkReset}>
+            <Link href="/loja/fornecedoresdisponiveis" className={styles.linkReset}>
               <div className={styles.menuItem}>
-                <FiUser size={20} /><span>Perfil</span>
+                <FiSearch size={20} /><span>Buscar Fornecedores</span>
               </div>
             </Link>
           </li>
 
+          {/* 3. Meus Pedidos */}
+          <li>
+            <Link href="/loja/pedidos" className={styles.linkReset}>
+              <div className={styles.menuItem}>
+                <FiPackage size={20} /><span>Meus Pedidos</span>
+              </div>
+            </Link>
+          </li>
+
+          {/* 4. Perfil */}
+          <li>
+            <Link href="/loja/perfil" className={styles.linkReset}>
+              <div className={styles.menuItem}>
+                <FiUser size={20} /><span>Meu Perfil</span>
+              </div>
+            </Link>
+          </li>
+
+          {/* 5. Sair */}
           <li>
             <Link href="/" className={styles.linkReset}>
               <div className={styles.menuItem}>
@@ -325,13 +95,67 @@ const Loja = () => {
         </ul>
       </nav>
 
-
+      {/* --- CONTEÚDO PRINCIPAL (Só Dashboard) --- */}
       <main className={styles['main-content']}>
-        {activeView === 'dashboard' && renderDashboard()}
-        {activeView === 'fornecedores' && renderFornecedores()}
+        <header className={styles.header}>
+          <h1>DASHBOARD</h1>
+          <div className={styles['profile-area']}>
+            <FiUserCheck size={24} />
+            <span>Visão Geral</span>
+          </div>
+        </header>
+
+        <section className={styles['dashboard-cards']}>
+          <div className={styles.card}>
+            <h3>Pedidos Realizados</h3>
+            <p>{dashboardData.totalRealizados}</p>
+          </div>
+          <div className={styles.card}>
+            <h3>Valor Total</h3>
+            <p>
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(dashboardData.valorTotal)}
+            </p>
+          </div>
+          <div className={styles.card}>
+            <h3>Pendentes</h3>
+            <p>{dashboardData.totalPendentes}</p>
+          </div>
+        </section>
+
+        <section className={styles['orders-table-section']}>
+          <h2>Últimos Pedidos</h2>
+          <table className={styles['orders-table']}>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Loja/Ref</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pedidosRecentes.length > 0 ? (
+                pedidosRecentes.map((pedido) => (
+                  <tr key={pedido._id}>
+                    <td>{pedido._id.substring(0, 8)}...</td>
+                    <td>{pedido.store_id}</td>
+                    <td>
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pedido.total_amount)}
+                    </td>
+                    <td>{pedido.status}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" style={{textAlign: 'center', padding: '15px'}}>Nenhum pedido recente.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
       </main>
     </div>
   );
 };
 
-export default Loja;
+export default DashboardLoja;

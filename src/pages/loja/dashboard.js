@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-import styles from '../styles/lojas.module.css';
-import api from '../services/api';
+import styles from '@/styles/lojas.module.css';
+import api from '@/services/api';
 
 import {
   FiGrid, FiUsers, FiPackage, FiUser, FiLogOut, FiUserCheck,

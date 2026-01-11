@@ -69,7 +69,7 @@ Bash
 
 Este frontend depende obrigatoriamente da API Java desenvolvida com Spring Boot para funcionar. Sem o backend rodando, as funcionalidades de login e listagem de dados não estarão disponíveis.
 
-Você pode encontrar o repositório do Backend aqui: 👉 Central de Compras - Backend
+Você pode encontrar o repositório do Backend aqui: 👉 https://github.com/Rafaelzzzx/trabalho-interdisciplinar-backend
 ## 📨 Contato
 
 * **GitHub:** [Rafaelzzzx](https://github.com/Rafaelzzzx)

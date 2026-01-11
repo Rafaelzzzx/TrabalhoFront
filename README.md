@@ -1,40 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+💻 Central de Compras - Interface Web (UNESC)
 
-## Getting Started
+Este repositório contém o Frontend do projeto Central de Compras, desenvolvido para o curso de Ciência da Computação da UNESC. A interface foi projetada para ser intuitiva, rápida e responsiva, atendendo aos três perfis de usuários do sistema: Lojistas, Fornecedores e Administradores.
+🚀 Sobre a Interface
 
-First, run the development server:
+A aplicação foi construída utilizando o ecossistema moderno do React, focada em entregar uma experiência de usuário (UX) consistente. Através desta interface, é possível realizar todo o ciclo de compras, desde a prospecção de fornecedores até o fechamento de pedidos.
+Funcionalidades por Perfil:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+    Painel do Lojista: Catálogo interativo de produtos, busca de fornecedores disponíveis e histórico de pedidos realizados.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    Painel do Fornecedor: Gestão de inventário, criação de campanhas promocionais e controle de condições comerciais.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+    Painel do Administrador: Dashboard gerencial para cadastro de categorias, usuários e monitoramento geral do sistema.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+🛠️ Tecnologias Utilizadas
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+    Framework: Next.js (React)
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    Linguagem: TypeScript / JavaScript
 
-## Learn More
+    Estilização: CSS Modules (para escopo isolado de componentes)
 
-To learn more about Next.js, take a look at the following resources:
+    Consumo de API: Axios
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+    Autenticação: Gerenciamento de tokens JWT para sessões seguras.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+📂 Estrutura do Projeto
 
-## Deploy on Vercel
+    /src/pages: Roteamento dinâmico do Next.js (Admin, Loja e Fornecedor).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+    /src/components: Componentes reutilizáveis e HOCs de autenticação (withAuth).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+    /src/services: Configuração da instância da API e chamadas de serviço.
+
+    /src/styles: Arquivos de estilo CSS específicos por módulo.
+
+⚙️ Como Executar
+Pré-requisitos
+
+    Node.js (versão 18 ou superior)
+
+    Gerenciador de pacotes npm ou yarn
+
+Passos
+
+    Clone o repositório:
+    Bash
+
+git clone https://github.com/Rafaelzzzx/TrabalhoFront.git
+cd TrabalhoFront
+
+Instale as dependências:
+Bash
+
+npm install
+
+
+Configure o endpoint da API: Verifique o arquivo src/services/api.js e certifique-se de que a URL aponta para o seu backend local (geralmente http://localhost:8080).
+
+Inicie o servidor de desenvolvimento:
+Bash
+
+    npm run dev
+    
+
+    Acesse: http://localhost:3000
+
+⚙️ Backend
+
+Este frontend depende obrigatoriamente da API Java desenvolvida com Spring Boot para funcionar. Sem o backend rodando, as funcionalidades de login e listagem de dados não estarão disponíveis.
+
+Você pode encontrar o repositório do Backend aqui: 👉 Central de Compras - Backend
+📨 Contato
+
+    GitHub: Rafaelzzzx
+
+    E-mail: Rafaelantunesmariani@gmail.com
+
+    LinkedIn: rafael-antunes-java
+
+Desenvolvido como projeto acadêmico - UNESC 2024/2025.
